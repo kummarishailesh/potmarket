@@ -1,0 +1,49 @@
+{
+  "name": "potmarket",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "lucide-react": "^0.294.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-scripts": "5.0.1"
+  },
+  "scripts": {
+    "dev": "concurrently \"vite\" \"node backend/server.js\" \"node scripts/open-browser.js\"",
+    "build": "vite build",
+    "preview": "vite preview",
+    "start:dev": "node scripts/print-vite.js && vite",
+    "start": "npm run start:dev",
+    "print:vite": "node scripts/print-vite.js"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.22",
+    "baseline-browser-mapping": "^2.10.27",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.18",
+    "vite": "^7.2.4"
+  }
+}

@@ -1,0 +1,229 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const DB_PATH = path.join(__dirname, 'db.json');
+
+const defaultDB = {
+  themes: {},
+  userThemes: {},
+  orders: [],
+  users: [],
+  payments: [],
+  products: []
+};
+
+class Database {
+  constructor() {
+    this.data = this.loadData();
+  }
+
+  loadData() {
+    try {
+      if (fs.existsSync(DB_PATH)) {
+        const rawData = fs.readFileSync(DB_PATH, 'utf8');
+        try {
+          return JSON.parse(rawData);
+        } catch (parseErr) {
+          console.error('Database JSON parse error:', parseErr);
+          // Try to recover from a backup file
+          const bakPath = DB_PATH + '.bak';
+          if (fs.existsSync(bakPath)) {
+            try {
+              const bakData = fs.readFileSync(bakPath, 'utf8');
+              return JSON.parse(bakData);
+            } catch (bakErr) {
+              console.error('Failed to parse backup DB file:', bakErr);
+            }
+          }
+          return { ...defaultDB };
+        }
+      }
+      return { ...defaultDB };
+    } catch (error) {
+      console.error('Error loading database:', error);
+      return { ...defaultDB };
+    }
+  }
+
+  saveData() {
+    try {
+      // Atomic write: write to a temp file then rename to avoid corrupting the DB on partial writes
+      const tmpPath = DB_PATH + '.tmp';
+      fs.writeFileSync(tmpPath, JSON.stringify(this.data, null, 2), 'utf8');
+      try {
+        fs.renameSync(tmpPath, DB_PATH);
+      } catch (renameErr) {
+        // On some Windows setups rename can fail if target is open; fallback to direct write
+        try {
+          fs.writeFileSync(DB_PATH, JSON.stringify(this.data, null, 2), 'utf8');
+          // remove tmp if exists
+          if (fs.existsSync(tmpPath)) fs.unlinkSync(tmpPath);
+        } catch (directErr) {
+          // rethrow to outer catch
+          throw directErr;
+        }
+      }
+      return true;
+    } catch (error) {
+      try {
+        // attempt to save a backup
+        const bakPath = DB_PATH + '.bak';
+        fs.writeFileSync(bakPath, JSON.stringify(this.data, null, 2), 'utf8');
+        console.error('Error saving database to main path; backup written to', bakPath, error && error.message ? error.message : error);
+        return true; // consider success since backup saved
+      } catch (e) {
+        console.error('Failed to save database backup:', e && e.message ? e.message : e);
+      }
+      return false;
+    }
+  }
+
+  getOrders() {
+    return this.data.orders || [];
+  }
+
+  addOrder(order) {
+    if (!this.data.orders) {
+      this.data.orders = [];
+    }
+    this.data.orders.push(order);
+    const ok = this.saveData();
+    if (!ok) {
+      // log warning but do not throw so API can still respond; a backup copy may exist
+      console.error('Warning: Failed to persist order to main DB file; order added to memory and backup attempted');
+    }
+    return order;
+  }
+
+  getOrderById(orderId) {
+    const orders = this.data.orders || [];
+    return orders.find(order => order.id === orderId);
+  }
+
+  updateOrder(orderId, updates) {
+    const orders = this.data.orders || [];
+    const index = orders.findIndex(order => order.id === orderId);
+    
+    if (index !== -1) {
+      orders[index] = { ...orders[index], ...updates };
+      this.saveData();
+      return orders[index];
+    }
+    return null;
+  }
+
+  getProducts() {
+    return this.data.products || [];
+  }
+
+  getProductById(productId) {
+    const products = this.getProducts();
+    return products.find(p => p.id === productId);
+  }
+
+  addProduct(productData) {
+    const products = this.getProducts();
+    const newProduct = { id: Date.now(), ...productData };
+    products.push(newProduct);
+    this.saveData();
+    return newProduct;
+  }
+
+  updateProduct(productId, updates) {
+    const products = this.getProducts();
+    const index = products.findIndex(p => p.id === productId);
+    if (index !== -1) {
+      products[index] = { ...products[index], ...updates };
+      this.saveData();
+      return products[index];
+    }
+    return null;
+  }
+
+  deleteProduct(productId) {
+    this.data.products = this.getProducts().filter(p => p.id !== productId);
+    return this.saveData();
+  }
+  getOrdersByUser(userId) {
+    const orders = this.getOrders() || [];
+    return orders.filter(o => o.userId === userId || String(o.userId) === String(userId));
+  }
+  getUsers() {
+    return this.data.users || [];
+  }
+
+  addUser(user) {
+    if (!this.data.users) {
+      this.data.users = [];
+    }
+    this.data.users.push(user);
+    this.saveData();
+    return user;
+  }
+
+  getUserByEmail(email) {
+    const users = this.data.users || [];
+    return users.find(user => user.email === email);
+  }
+
+  getUserById(userId) {
+    const users = this.getUsers();
+    return users.find(u => u.id === userId || String(u.id) === String(userId));
+  }
+
+  updateUser(userId, updates) {
+    const users = this.getUsers();
+    const index = users.findIndex(u => u.id === userId || String(u.id) === String(userId));
+    if (index !== -1) {
+      users[index] = { ...users[index], ...updates };
+      this.saveData();
+      return users[index];
+    }
+    return null;
+  }
+
+  getPayments() {
+    return this.data.payments || [];
+  }
+
+  addPayment(payment) {
+    if (!this.data.payments) {
+      this.data.payments = [];
+    }
+    this.data.payments.push(payment);
+    this.saveData();
+    return payment;
+  }
+
+  getThemes() {
+    return this.data.themes || {};
+  }
+
+  addTheme(themeId, themeData) {
+    if (!this.data.themes) {
+      this.data.themes = {};
+    }
+    this.data.themes[themeId] = themeData;
+    this.saveData();
+    return themeData;
+  }
+
+  getUserTheme(userId) {
+    return (this.data.userThemes || {})[userId] || 'default';
+  }
+
+  setUserTheme(userId, themeId) {
+    if (!this.data.userThemes) {
+      this.data.userThemes = {};
+    }
+    this.data.userThemes[userId] = themeId;
+    this.saveData();
+    return themeId;
+  }
+}
+
+export default new Database();

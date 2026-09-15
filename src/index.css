@@ -1,0 +1,218 @@
+/*index.css*/
+/* stylelint-disable at-rule-no-unknown */
+/* Tailwind directives — keep these so PostCSS/Tailwind can process them */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* stylelint-enable at-rule-no-unknown */
+
+/* Custom CSS for animations and other styles */
+body {
+  font-family: 'Inter', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@layer utilities {
+  .animate-bubble-1 {
+    animation: bubble 25s linear infinite;
+  }
+  .animate-bubble-2 {
+    animation: bubble 20s linear infinite;
+  }
+  .animate-bubble-3 {
+    animation: bubble 30s linear infinite;
+  }
+  .animate-bubble-4 {
+    animation: bubble 15s linear infinite;
+  }
+}
+
+@keyframes bubble {
+  0% {
+    transform: translateY(0) rotate(0deg);
+  }
+  100% {
+    transform: translateY(-100vh) rotate(720deg);
+  }
+}
+
+/* For Webkit browsers like Chrome and Safari */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+/* Dark-mode base overrides — keep cards white but make page background and primary text light */
+html.dark body {
+  background-color: #0b1220;
+  color: #e5e7eb;
+}
+
+/* Slightly dim trust badge background when dark */
+html.dark .bg-white.border-b {
+  background-color: transparent;
+}
+
+/* Header category button styles (matches provided screenshot)
+   - .category-btn: default dark rounded rectangle with subtle border
+   - .category-btn.selected: white rounded rectangle with green text and faint glow
+*/
+.categories-row {
+  -webkit-overflow-scrolling: touch;
+}
+
+.category-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  /* wider horizontally: increase left/right padding and ensure a minimum width */
+  padding: 0.6rem 2.0rem; /* more horizontal padding */
+  min-width: 140px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.03); /* subtle dark button */
+  color: #e6eef6; /* light text */
+  border: 1px solid rgba(255,255,255,0.08);
+  font-weight: 700; /* slightly bolder to match screenshot */
+  font-size: 0.95rem;
+  letter-spacing: 0.3px; /* small tracking to match screenshot spacing */
+  text-align: center;
+  white-space: nowrap;
+  transition: all 160ms ease-in-out;
+  cursor: pointer;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
+}
+
+.category-btn:hover {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.16);
+  transform: translateY(-2px);
+}
+
+.category-btn.selected {
+  background: #ffffff; /* white selected */
+  color: #0b1220; /* dark text when selected */
+  border-color: rgba(16,24,40,0.08);
+  box-shadow: 0 4px 12px rgba(2,6,23,0.35), inset 0 -1px 0 rgba(0,0,0,0.06);
+  border-radius: 10px;
+}
+
+/* Smaller screens: slightly smaller padding */
+@media (max-width: 640px) {
+  .category-btn { padding: 0.45rem 1rem; min-width: 96px; font-size: 0.9rem; letter-spacing: 0.2px; font-weight: 700; }
+}
+
+/* Header dark override handled inline in React, but provide a fallback */
+html.dark header.custom-dark {
+  background: linear-gradient(90deg, #0f172a 0%, #111827 100%);
+}
+
+/* Broad dark-mode utility overrides to ensure components using Tailwind utility classes
+   (eg. bg-white, bg-gray-50, text-gray-600, border-gray-200) appear correctly in dark mode
+   without changing every JSX className. Uses higher-specificity selectors and !important
+   to override generated utility classes as a pragmatic site-wide dark-mode fallback. */
+html.dark .bg-white {
+  background-color: #0b1220 !important;
+  color: #e5e7eb !important;
+}
+
+html.dark .bg-gray-50,
+html.dark .bg-gray-100,
+html.dark .bg-gray-200,
+html.dark .bg-gray-300 {
+  background-color: #071022 !important;
+}
+
+html.dark .bg-green-50 {
+  /* keep subtle green tint but dark */
+  background-color: rgba(4, 120, 87, 0.08) !important;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-700 {
+  color: #9ca3af !important; /* lighter gray for secondary text */
+}
+
+html.dark .text-gray-900,
+html.dark .text-black {
+  color: #e5e7eb !important;
+}
+
+html.dark .border-gray-200,
+html.dark .border-gray-300,
+html.dark .border-gray-100 {
+  border-color: #374151 !important;
+}
+
+html.dark .divide-gray-200,
+html.dark .divide-gray-300 {
+  border-color: #374151 !important;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: #0b1220 !important;
+  color: #e5e7eb !important;
+  border-color: #374151 !important;
+}
+
+/* Buttons that used light backgrounds: make them dark but keep accent text where possible */
+html.dark .bg-gray-100 > *,
+html.dark .bg-gray-200 > * {
+  color: #e5e7eb !important;
+}
+
+/* Modal / card fallbacks */
+html.dark .rounded-lg.bg-white {
+  background-color: #0b1220 !important;
+}
+
+/* Tables */
+html.dark tbody.bg-white {
+  background-color: transparent !important;
+}
+
+/* Ensure header/footer backgrounds are dark when using utility classes */
+html.dark .bg-gray-800,
+html.dark .bg-gray-900,
+html.dark .bg-black {
+  background-color: #05060a !important;
+}
+
+/* Slightly dim trust badge or border backgrounds when dark */
+html.dark .bg-white.border-b {
+  background-color: transparent;
+}
+
+/* Dashboard nav scroll area */
+.dashboard-nav {
+  max-height: calc(100vh - 96px); /* leave space for header and footer inside the aside */
+  overflow-y: auto;
+  padding-right: 8px; /* room for scrollbar */
+}
+
+.dashboard-nav::-webkit-scrollbar {
+  width: 10px;
+}
+
+.dashboard-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dashboard-nav::-webkit-scrollbar-thumb {
+  background: rgba(15, 23, 42, 0.25);
+  border-radius: 6px;
+}
