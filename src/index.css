@@ -11,7 +11,33 @@ body {
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
+
+html,
+body,
+#root {
+  min-width: 0;
+  max-width: 100%;
+}
+
+html { overflow-x: clip; }
+
+@media (max-width: 639px) {
+  .dashboard-nav button { font-size: 0.8125rem; }
+  .dashboard-nav button svg { width: 1rem; height: 1rem; }
+  .dashboard-nav h3 { font-size: 0.65rem; }
+}
+
+.consumer-entry { position: relative; isolation: isolate; overflow: hidden; }
+.entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=2200&q=90'); background-position:center; background-size:cover; background-repeat:no-repeat; }
+.entry-pot-wall::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,44,34,.28), rgba(2,25,41,.38)); }
+.entry-logo { position:relative; width:56px; height:56px; display:grid; place-items:center; border-radius:16px; background:#e8b34b; color:#102a2b; box-shadow:0 10px 24px rgba(0,0,0,.18); }
+.entry-pot-shape { position:absolute; left:16px; bottom:10px; width:25px; height:19px; border-radius:3px 3px 8px 8px; background:#9a542d; transform:perspective(20px) rotateX(-4deg); }
+.entry-pot-shape::before { content:''; position:absolute; left:-3px; top:-4px; width:31px; height:6px; border-radius:5px; background:#6e3924; }
+.entry-logo svg { position:relative; z-index:1; transform:translateY(-9px); }
+.entry-logo-small { width:44px; height:44px; border-radius:12px; }
+@keyframes entry-pot-drift { from { margin-top:-10px; } to { margin-top:18px; } }
 
 @layer utilities {
   .animate-bubble-1 {
@@ -72,6 +98,8 @@ html.dark .bg-white.border-b {
 */
 .categories-row {
   -webkit-overflow-scrolling: touch;
+  overflow-y: hidden;
+  scrollbar-width: thin;
 }
 
 .category-btn {
@@ -79,8 +107,8 @@ html.dark .bg-white.border-b {
   align-items: center;
   justify-content: center;
   /* wider horizontally: increase left/right padding and ensure a minimum width */
-  padding: 0.6rem 2.0rem; /* more horizontal padding */
-  min-width: 140px;
+  padding: 0.6rem 1.25rem;
+  min-width: 112px;
   border-radius: 10px;
   background: rgba(255,255,255,0.03); /* subtle dark button */
   color: #e6eef6; /* light text */
@@ -111,7 +139,9 @@ html.dark .bg-white.border-b {
 
 /* Smaller screens: slightly smaller padding */
 @media (max-width: 640px) {
-  .category-btn { padding: 0.45rem 1rem; min-width: 96px; font-size: 0.9rem; letter-spacing: 0.2px; font-weight: 700; }
+  .category-btn { padding: 0.55rem 1rem; min-width: 88px; font-size: 0.85rem; letter-spacing: 0; font-weight: 700; }
+  .categories-row { scrollbar-width: none; }
+  .categories-row::-webkit-scrollbar { display: none; }
 }
 
 /* Header dark override handled inline in React, but provide a fallback */

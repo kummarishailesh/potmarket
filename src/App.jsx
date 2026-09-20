@@ -1,6 +1,6 @@
  //app.js
 import React, { useState, useEffect, useMemo } from 'react';
-import { ShoppingCart, Search, Heart, Star, Menu, Filter, Truck, Shield, RotateCcw, X, Package, FileText, Image, File, MessageSquare, ShoppingBag, Layout, Palette, Puzzle, Settings, Check, Sun, Moon, MapPin } from 'lucide-react';
+import { ShoppingCart, Search, Heart, Star, Menu, Filter, Truck, Shield, RotateCcw, X, Package, Sprout, FileText, Image, File, MessageSquare, ShoppingBag, Layout, Palette, Puzzle, Settings, Check, Sun, Moon, MapPin, LogOut } from 'lucide-react';
 
 // Animated Bubble Background Component
 const BubbleBackground = ({ theme }) => {
@@ -168,7 +168,7 @@ const CustomColorPicker = ({ onColorChange, onCreateTheme, onClose }) => {
       cardBg: 'bg-white',
       textPrimary: 'text-gray-900',
       textSecondary: 'text-gray-600',
-      icon: '🪴'
+      icon: 'theme'
     };
 
     onCreateTheme(customTheme);
@@ -180,12 +180,7 @@ const CustomColorPicker = ({ onColorChange, onCreateTheme, onClose }) => {
       <div className="bg-white dark:bg-[#0b1220] rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Create Custom Theme</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-500 hover:text-gray-700 text-2xl dark:text-gray-300"
-          >
-            ×
-          </button>
+          <button onClick={onClose} className="text-gray-500 hover:text-gray-700 text-2xl dark:text-gray-300">Close</button>
         </div>
 
         <div className="space-y-4">
@@ -262,9 +257,11 @@ const CustomColorPicker = ({ onColorChange, onCreateTheme, onClose }) => {
 
 // Configuration - Update these values for your business
 const BUSINESS_CONFIG = {
-  UPI_ID: '9866852823-3@ybl', // Your actual UPI ID
+  RAZORPAY_KEY_ID: 'YOUR_RAZORPAY_KEY_ID',
   BUSINESS_NAME: 'PotMarket'
 };
+
+const isGatewayPayment = paymentMethod => ['online', 'upi'].includes(String(paymentMethod || '').toLowerCase());
 
 // Theme Configuration
 const THEMES = {
@@ -405,17 +402,16 @@ const THEMES = {
   }
 };
 
-// IMPORTANT: Add your UPI QR code image to public/upi-qr-code.png
 // Requirements: PNG format, 300x300px or larger, clear and scannable
 
-const LoginForm = ({ onLogin, onSwitchToRegister }) => {
+const LoginForm = ({ onLogin, onForgotPassword, onSwitchToRegister }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (onLogin(email, password)) {
+    if (await onLogin(email, password)) {
       setError('');
     } else {
       setError('Invalid email or password');
@@ -451,6 +447,7 @@ const LoginForm = ({ onLogin, onSwitchToRegister }) => {
       >
         Login
       </button>
+      <button type="button" onClick={onForgotPassword} className="w-full text-sm text-green-700 hover:underline">Forgot password?</button>
       <p className="text-center text-sm">
         Don't have an account?{' '}
         <button
@@ -465,20 +462,50 @@ const LoginForm = ({ onLogin, onSwitchToRegister }) => {
   );
 };
 
-const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
+const ForgotPasswordForm = ({ onRequestOtp, onReset, onBackToLogin }) => {
+  const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [otp, setOtp] = useState(Array(6).fill('')); const [step, setStep] = useState('email'); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  const submit = async event => { event.preventDefault(); setBusy(true); setError(''); const result = step === 'email' ? await onRequestOtp(email) : await onReset(email, otp.join(''), password); if (result === true && step === 'email') setStep('reset'); else if (result !== true) setError(typeof result === 'string' ? result : 'Unable to reset password'); else onBackToLogin(); setBusy(false); };
+  const updateOtp = (index, value) => { const digit = value.replace(/\D/g, '').slice(-1); setOtp(current => current.map((item, itemIndex) => itemIndex === index ? digit : item)); if (digit && index < 5) document.getElementById(`reset-otp-${index + 1}`)?.focus(); };
+  return <form onSubmit={submit} className="space-y-4"><h3 className="text-lg font-semibold text-slate-900">{step === 'email' ? 'Reset your password' : 'Set a new password'}</h3>{step === 'email' ? <><label className="block text-sm font-medium">Account email<input type="email" value={email} onChange={event => setEmail(event.target.value)} className="w-full px-3 py-2 border rounded-lg mt-1" required /></label><p className="text-xs text-slate-500">We will send a 6-digit reset code to this email.</p></> : <><div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-800">Reset code sent to <strong>{email}</strong></div><label className="block text-sm font-medium">Enter reset code</label><div className="flex gap-2">{otp.map((digit, index) => <input key={index} id={`reset-otp-${index}`} value={digit} onChange={event => updateOtp(index, event.target.value)} inputMode="numeric" maxLength="1" className="w-full h-11 text-center text-lg font-bold border rounded-lg" required />)}</div><label className="block text-sm font-medium">New password<input type="password" value={password} onChange={event => setPassword(event.target.value)} className="w-full px-3 py-2 border rounded-lg mt-1" minLength="8" required /></label></>}{error && <p className="text-red-500 text-sm">{error}</p>}<button type="submit" disabled={busy} className="w-full bg-green-600 text-white py-2 rounded-lg disabled:opacity-60">{busy ? 'Please wait…' : step === 'email' ? 'Send reset code' : 'Reset password'}</button><button type="button" onClick={onBackToLogin} className="w-full text-sm text-green-700 hover:underline">Back to login</button></form>;
+};
+
+const ENTRY_POT_IMAGES = [
+  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/2446b85d-848f-42f9-8d6c-bebd705da30a.png',
+  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png',
+  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/d9661d7a-f9f4-4403-9b8c-166c2a286433.png',
+  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/94c93ba0-2de1-4943-a137-5cfc2c23040c.png'
+];
+
+const ConsumerEntryPage = ({ onLogin, onRequestOtp, onRegister, onRequestPasswordOtp, onResetPassword, onContinueAsGuest }) => {
+  const [registering, setRegistering] = useState(false); const [forgotPassword, setForgotPassword] = useState(false);
+  return <main className="consumer-entry min-h-screen bg-slate-950 flex items-center justify-center p-6"><div className="entry-pot-wall" aria-hidden="true" /><section className="relative z-10 w-full max-w-5xl grid md:grid-cols-2 overflow-hidden rounded-3xl bg-white shadow-2xl"><div className="hidden md:flex flex-col justify-between bg-emerald-950/80 text-white p-12"><div><div className="entry-logo"><span className="entry-pot-shape" /><Sprout size={27} strokeWidth={2.5} /></div><p className="mt-8 text-sm uppercase tracking-[0.25em] text-emerald-200">PotMarket</p><h1 className="mt-3 text-4xl font-bold leading-tight">Thoughtful pots for meaningful spaces.</h1><p className="mt-5 text-emerald-100 leading-7">Sign in to keep your orders, wishlist, and delivery updates together.</p></div><p className="text-sm text-emerald-200">A calmer way to shop handcrafted planters.</p></div><div className="p-8 sm:p-12"><div className="md:hidden flex items-center gap-3 mb-8"><div className="entry-logo entry-logo-small"><span className="entry-pot-shape" /><Sprout size={21} /></div><strong className="text-xl text-emerald-900">PotMarket</strong></div><p className="text-xs uppercase tracking-[0.22em] text-emerald-700">Welcome back</p><h2 className="mt-2 text-3xl font-bold text-slate-900">{forgotPassword ? 'Recover your account' : registering ? 'Create your account' : 'Sign in to PotMarket'}</h2><p className="mt-2 mb-7 text-sm text-slate-500">{forgotPassword ? 'Reset your password securely by email.' : registering ? 'Save your details and follow every order.' : 'Your products and orders are waiting for you.'}</p>{forgotPassword ? <ForgotPasswordForm onRequestOtp={onRequestPasswordOtp} onReset={onResetPassword} onBackToLogin={() => setForgotPassword(false)} /> : registering ? <RegisterForm onRequestOtp={onRequestOtp} onRegister={onRegister} onSwitchToLogin={() => setRegistering(false)} /> : <LoginForm onLogin={onLogin} onForgotPassword={() => setForgotPassword(true)} onSwitchToRegister={() => setRegistering(true)} />}<button type="button" onClick={onContinueAsGuest} className="mt-6 w-full border border-slate-200 text-slate-600 py-2.5 rounded-lg hover:bg-slate-50 transition">Continue as guest</button></div></section></main>;
+};
+
+const RegisterForm = ({ onRequestOtp, onRegister, onSwitchToLogin }) => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState(Array(6).fill(''));
+  const [step, setStep] = useState('details');
+  const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (onRegister(name, email, password)) {
+    setBusy(true); setError('');
+    const result = step === 'details' ? await onRequestOtp(name, email, phone, password) : await onRegister(name, email, phone, password, otp.join(''));
+    if (result === true && step === 'details') {
+      setStep('otp');
+    } else if (result === true) {
       setError('');
     } else {
-      setError('Email already exists or registration failed');
+      setError(typeof result === 'string' ? result : 'Registration failed');
     }
+    setBusy(false);
   };
+  const updateOtp = (index, value) => { const digit = value.replace(/\D/g, '').slice(-1); setOtp(current => current.map((item, itemIndex) => itemIndex === index ? digit : item)); if (digit && index < 5) document.getElementById(`register-otp-${index + 1}`)?.focus(); };
+  const handleOtpKey = (event, index) => { if (event.key === 'Backspace' && !otp[index] && index > 0) document.getElementById(`register-otp-${index - 1}`)?.focus(); };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -502,6 +529,10 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
           required
         />
       </div>
+      {step === 'details' && <div>
+        <label className="block text-sm font-medium mb-1">Mobile number</label>
+        <input type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 9876543210" className="w-full px-3 py-2 border rounded-lg" required />
+      </div>}
       <div>
         <label className="block text-sm font-medium mb-1">Password</label>
         <input
@@ -512,13 +543,14 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
           required
         />
       </div>
+      {step === 'details' ? <p className="text-xs text-slate-500">After submitting, a 6-digit OTP will be sent to your email.</p> : <>
+        <div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-800">OTP sent to <strong>{email}</strong></div>
+        <label className="block text-sm font-medium">Enter email OTP</label>
+        <div className="flex gap-2">{otp.map((digit, index) => <input key={index} id={`register-otp-${index}`} value={digit} onChange={event => updateOtp(index, event.target.value)} onKeyDown={event => handleOtpKey(event, index)} inputMode="numeric" maxLength="1" className="w-full h-12 text-center text-xl font-bold border rounded-lg" aria-label={`OTP digit ${index + 1}`} required />)}</div>
+        <button type="button" className="text-sm text-emerald-700 hover:underline" onClick={() => { setStep('details'); setOtp(Array(6).fill('')); }}>Change details / resend OTP</button>
+      </>}
       {error && <p className="text-red-500 text-sm">{error}</p>}
-      <button
-        type="submit"
-        className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 active:scale-95 active:shadow-lg transition"
-      >
-        Register
-      </button>
+      <button type="submit" disabled={busy} className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 active:scale-95 active:shadow-lg transition disabled:opacity-60">{busy ? 'Please wait…' : step === 'details' ? 'Send OTP to email' : 'Verify OTP and create account'}</button>
       <p className="text-center text-sm">
         Already have an account?{' '}
         <button
@@ -535,7 +567,7 @@ const RegisterForm = ({ onRegister, onSwitchToLogin }) => {
 
 
 const PotMarket = () => {
-  const [products] = useState([
+  const [products, setProducts] = useState([
     { id: 1, name: 'flower pot', price: 2499, originalPrice: 3999, rating: 2.4, reviews: 234, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/2446b85d-848f-42f9-8d6c-bebd705da30a.png', category: 'culture', discount: 38, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Medium' },
     { id: 2, name: ' lord shiva Pot', price: 599, originalPrice: 899, rating: 4.3, reviews: 156, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/638e77bc-6ed4-4d73-9868-f15ca9988b08.png', category: 'god', discount: 33, inStock: true, delivery: '2 days', prime: false, size: 'Small' },
     { id: 3, name: 'Modern india Planter', price: 1899, originalPrice: 2899, rating: 4.7, reviews: 89, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png', category: 'soil of indian', discount: 35, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Large' },
@@ -561,6 +593,8 @@ const PotMarket = () => {
     { id: 23, name: 'bananaleaf pot', price: 1659, originalPrice: 2659, rating: 4.3, reviews: 312, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/8e213149-c4e6-48a0-a36c-6f0f72d17f21.png', category: 'traditional', discount: 30, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Medium'  },
     { id: 24, name: 'joint family', price: 4659, originalPrice: 6599, rating: 4.3, reviews: 312, image: 'https://i.pinimg.com/236x/3c/ce/dc/3ccedc175520e1f79c8517c23bee0ca9.jpg', category: 'family', discount: 30, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Medium'  },
   ]);
+  const getOrderItemImage = item => item?.image || products.find(product => String(product.id) === String(item?.id))?.image || '';
+  useEffect(() => { fetch('/api/products').then(response => response.ok ? response.json() : null).then(async result => { if (result?.products?.length) { setProducts(current => [...current.filter(product => !result.products.some(managed => String(managed.id) === String(product.id))), ...result.products]); return; } const bootstrap = await fetch('/api/products/bootstrap', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ products }) }); const seeded = bootstrap.ok ? await bootstrap.json() : null; if (seeded?.products?.length) setProducts(current => [...current.filter(product => !seeded.products.some(managed => String(managed.id) === String(product.id))), ...seeded.products]); }).catch(() => {}); }, []);
 
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
@@ -589,6 +623,7 @@ const PotMarket = () => {
   // User state (moved before theme code to avoid hoisting issues)
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [showEntryLogin, setShowEntryLogin] = useState(() => !localStorage.getItem('user-session'));
 
   // Use relative API base so Vite dev server can proxy '/api' to the backend.
   // In production the backend serves the same origin so '/api' works there as well.
@@ -598,10 +633,10 @@ const PotMarket = () => {
     try {
       const response = await fetch(`${API_BASE}/themes`);
       const data = await response.json();
-      if (!response.ok || !data.default || typeof data.default !== 'object') {
+      if (!response.ok || !data || typeof data !== 'object') {
         throw new Error('Theme API returned an invalid response');
       }
-      return { default: data.default, custom: data.custom || {} };
+      return { default: Object.keys(data.default || {}).length ? data.default : THEMES, custom: data.custom || {} };
     } catch (error) {
       console.error('Failed to fetch themes:', error);
       return { default: THEMES, custom: {} };
@@ -733,12 +768,6 @@ const PotMarket = () => {
     document.documentElement.style.setProperty('--theme-accent', theme.accent);
   }, [theme]);
   const [paymentMethod, setPaymentMethod] = useState('');
-  const [cardDetails, setCardDetails] = useState({
-    number: '',
-    expiry: '',
-    cvv: '',
-    name: ''
-  });
   const [orders, setOrders] = useState([]);
   const [showOrders, setShowOrders] = useState(false);
   const [showOrderDetails, setShowOrderDetails] = useState(false);
@@ -757,18 +786,6 @@ const PotMarket = () => {
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [currentView, setCurrentView] = useState('home');
 
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-
-    if (showDashboard) {
-      document.body.style.overflow = 'hidden';
-    }
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [showDashboard]);
-
   // Admin states
   const [posts, setPosts] = useState([]);
   const [pages, setPages] = useState([]);
@@ -783,157 +800,89 @@ const PotMarket = () => {
   const [showPluginSettings, setShowPluginSettings] = useState(false);
   const [selectedPlugin, setSelectedPlugin] = useState(null);
 
+  useEffect(() => {
+    const hasOpenOverlay = showDashboard || showOrders || showWishlist || showCart || showCheckout ||
+      showOrderDetails || showCancelOrder || showTrackingModal || showOrderConfirmation || showLogin ||
+      showRegister || showThemeSelector || showCustomPicker || showCreatePost || showCreatePage ||
+      showPluginSettings || Boolean(selectedProduct);
+    const previousBodyOverflow = document.body.style.overflow;
+    const previousDocumentOverflow = document.documentElement.style.overflow;
+
+    if (hasOpenOverlay) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+    }
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.documentElement.style.overflow = previousDocumentOverflow;
+    };
+  }, [showDashboard, showOrders, showWishlist, showCart, showCheckout, showOrderDetails, showCancelOrder, showTrackingModal, showOrderConfirmation, showLogin, showRegister, showThemeSelector, showCustomPicker, showCreatePost, showCreatePage, showPluginSettings, selectedProduct]);
+
   // Get WooCommerce settings
   const wooSettings = pluginSettings[1] || {}; // WooCommerce plugin ID is 1
 
-  // Generate UPI QR code URL
-  const generateUpiQrUrl = (upiId, amount) => {
-    if (!upiId) return '';
-    const upiUrl = `upi://pay?pa=${upiId}&pn=${wooSettings.storeName || 'PotMarket'}&am=${amount}&cu=INR`;
-    return `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+  const loadRazorpayScript = async () => {
+    if (window.Razorpay) return true;
+    await new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.async = true;
+      script.onload = () => resolve(true);
+      script.onerror = () => reject(new Error('Unable to load Razorpay checkout.'));
+      document.body.appendChild(script);
+    });
+    return true;
   };
 
-  // Mock credit card payment processing
-  const processCardPayment = async (cardDetails, amount) => {
+  const openRazorpayCheckout = async ({ key, amount, name, description, orderId, customer, contact, email, onSuccess, onFailure }) => {
+    await loadRazorpayScript();
     return new Promise((resolve, reject) => {
-      // Simulate payment processing delay
-      setTimeout(() => {
-        // Mock validation - in real app, this would call payment gateway API
-        const cardNumber = cardDetails.number.replace(/\s/g, '');
-
-        // Basic card number validation (starts with valid prefixes)
-        const validPrefixes = ['4', '5', '3', '6']; // Visa, Mastercard, Amex, Discover
-        if (!validPrefixes.some(prefix => cardNumber.startsWith(prefix))) {
-          reject(new Error('Invalid card number'));
-          return;
+      const razorpay = new window.Razorpay({
+        key,
+        amount,
+        currency: 'INR',
+        name,
+        description,
+        order_id: orderId,
+        handler: function(response) {
+          resolve(response);
+          if (onSuccess) onSuccess(response);
+        },
+        prefill: { name: customer || '', contact: contact || '', email: email || '' },
+        theme: { color: '#10B981' },
+        modal: {
+          ondismiss: function() {
+            reject(new Error('Razorpay checkout was cancelled.'));
+            if (onFailure) onFailure(new Error('Razorpay checkout was cancelled.'));
+          }
         }
-
-        // Mock successful payment
-        resolve({
-          transactionId: 'TXN' + Date.now(),
-          status: 'success',
-          amount: amount,
-          cardLastFour: cardNumber.slice(-4)
-        });
-      }, 2000); // 2 second delay to simulate processing
+      });
+      razorpay.on('payment.failed', function(error) {
+        reject(new Error(error?.error?.description || 'Payment failed. Please try again.'));
+        if (onFailure) onFailure(error);
+      });
+      razorpay.open();
     });
   };
 
-  // Verify card payment
-  const verifyCardPayment = async (orderId, transactionId) => {
-    try {
-      if (!orderId) {
-        return { success: false, message: 'Order ID is required' };
-      }
-
-      const response = await fetch(`${API_BASE}/orders/${orderId}/verify-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          transactionId: transactionId || null
-        })
-      });
-
-      if (!response.ok) {
-        try {
-          const error = await response.json();
-          return { success: false, message: error.message || `Payment verification failed (Error: ${response.status})` };
-        } catch (e) {
-          return { success: false, message: `Payment verification failed (Error: ${response.status})` };
-        }
-      }
-
-      let result;
-      try {
-        result = await response.json();
-      } catch (e) {
-        console.error('Failed to parse response:', e);
-        return { success: false, message: 'Invalid response from server' };
-      }
-
-      if (result.success) {
-        const updatedOrders = orders.map(order =>
-          order.id === orderId
-            ? { ...order, status: 'Confirmed', paymentVerified: true }
-            : order
-        );
-        setOrders(updatedOrders);
-        localStorage.setItem('user-orders', JSON.stringify(updatedOrders));
-
-        return {
-          success: true,
-          message: result.emailSent ?
-            'Payment verified! Order confirmed. Confirmation email sent.' :
-            'Payment verified! Order confirmed. (Email could not be sent)'
-        };
-      } else {
-        return { success: false, message: result.message || 'Payment verification failed' };
-      }
-    } catch (error) {
-      console.error('Error verifying card payment:', error);
-      return { success: false, message: `Error: ${error.message || 'Failed to verify payment. Please check your connection and try again.'}` };
+  const openOrderInvoice = (order, options = {}) => {
+    const { preventAlert = false, openInNewTab = true } = options;
+    if (!order?.id || String(order.id).startsWith('ord_local_')) return null;
+    const email = order.customerEmail || order.shippingAddress?.email || user?.email || '';
+    if (!email) {
+      if (!preventAlert) alert('An email address is required to download the invoice.');
+      return null;
     }
+    const invoiceUrl = `${API_BASE}/orders/${encodeURIComponent(order.id)}/invoice?email=${encodeURIComponent(email)}`;
+    if (openInNewTab) {
+      window.open(invoiceUrl, '_blank', 'noopener,noreferrer');
+    }
+    return invoiceUrl;
   };
 
-  // Verify UPI payment
-  const verifyUpiPayment = async (orderId, upiRefId) => {
-    try {
-      if (!orderId) {
-        return { success: false, message: 'Order ID is required' };
-      }
-
-      const response = await fetch(`${API_BASE}/orders/${orderId}/verify-payment`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          transactionId: upiRefId || `UPI${Date.now()}`
-        })
-      });
-
-      if (!response.ok) {
-        try {
-          const error = await response.json();
-          return { success: false, message: error.message || `Payment verification failed (Error: ${response.status})` };
-        } catch (e) {
-          return { success: false, message: `Payment verification failed (Error: ${response.status})` };
-        }
-      }
-
-      let result;
-      try {
-        result = await response.json();
-      } catch (e) {
-        console.error('Failed to parse response:', e);
-        return { success: false, message: 'Invalid response from server' };
-      }
-
-      if (result.success) {
-        const updatedOrders = orders.map(order =>
-          order.id === orderId
-            ? { ...order, status: 'Confirmed', paymentVerified: true }
-            : order
-        );
-        setOrders(updatedOrders);
-        localStorage.setItem('user-orders', JSON.stringify(updatedOrders));
-
-        return {
-          success: true,
-          message: result.emailSent ?
-            'Payment verified! Order confirmed. Confirmation email sent.' :
-            'Payment verified! Order confirmed. (Email could not be sent)'
-        };
-      } else {
-        return { success: false, message: result.message || 'Payment verification failed' };
-      }
-    } catch (error) {
-      console.error('Error verifying UPI payment:', error);
-      return { success: false, message: `Error: ${error.message || 'Failed to verify payment. Please check your connection and try again.'}` };
-    }
-  };
+  const verifyCardPayment = async () => ({ success: false, message: 'Manual payment verification is disabled.' });
+  const verifyUpiPayment = async () => ({ success: false, message: 'Manual payment verification is disabled.' });
 
   // Check backend health on mount
   const checkBackendHealth = async () => {
@@ -995,16 +944,24 @@ const PotMarket = () => {
   // Load wishlist, orders and user from storage on mount
   useEffect(() => {
     checkBackendHealth();
-    loadCart();
-    loadWishlist();
-    loadOrders();
-    loadUser();
+
+    const session = loadUser();
+    if (session) {
+      loadCart();
+      loadWishlist();
+      loadOrders();
+      loadUserData(session.id);
+    } else {
+      clearUserState();
+    }
     // attempt to send any pending orders saved during offline/backend failures
     (async () => {
       try {
         const pending = JSON.parse(localStorage.getItem('pending-orders') || '[]');
         if (pending && pending.length > 0) {
           for (const p of pending) {
+            const pendingPaymentMethod = String(p.orderData?.paymentMethod || '').toLowerCase();
+            if (pendingPaymentMethod !== 'cod' && !(isGatewayPayment(pendingPaymentMethod) && p.orderData?.paymentVerified === true)) continue;
             try {
               const res = await fetch(`${API_BASE}/orders`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p.orderData) });
               // handle empty/non-JSON responses safely
@@ -1069,10 +1026,67 @@ const PotMarket = () => {
         const userData = JSON.parse(stored);
         setUser(userData);
         setIsLoggedIn(true);
+        setShowEntryLogin(false);
+        return userData;
       }
     } catch (error) {
       console.log('No user session found');
     }
+    return false;
+  };
+
+  const loadUserData = async userId => {
+    if (!userId) return false;
+    try {
+      const response = await fetch(`${API_BASE.replace('/api', '')}/api/users/${userId}/data`, { credentials: 'include' });
+      const result = await response.json();
+      if (!response.ok || !result.success) return false;
+      const data = result.data || {};
+      const nextCart = Array.isArray(data.cart) ? data.cart : [];
+      const nextWishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
+      const nextOrders = (Array.isArray(data.orders) ? data.orders : []).filter(order => !(String(order.id || '').startsWith('ord_local_') && ['card', 'upi'].includes(String(order.paymentMethod || '').toLowerCase()) && order.paymentVerified !== true));
+      setCart(nextCart);
+      setWishlist(nextWishlist);
+      setOrders(nextOrders);
+      localStorage.setItem('user-cart', JSON.stringify(nextCart));
+      localStorage.setItem('user-wishlist', JSON.stringify(nextWishlist));
+      localStorage.setItem('user-orders', JSON.stringify(nextOrders));
+      return true;
+    } catch (error) {
+      console.warn('Failed to sync account data:', error.message);
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    if (!user?.id) return undefined;
+    const sync = () => loadUserData(user.id);
+    window.addEventListener('focus', sync);
+    const interval = window.setInterval(sync, 5000);
+    return () => {
+      window.removeEventListener('focus', sync);
+      window.clearInterval(interval);
+    };
+  }, [user?.id]);
+
+  const clearUserState = () => {
+    setUser(null);
+    setIsLoggedIn(false);
+    setShowEntryLogin(true);
+    setOrders([]);
+    setCart([]);
+    setWishlist([]);
+    setSelectedOrder(null);
+    setOrderToCancel(null);
+    setTrackingOrder(null);
+    setShowOrderDetails(false);
+    setShowCancelOrder(false);
+    setShowTrackingModal(false);
+    setShowDashboard(false);
+    setShowLogin(false);
+    setShowRegister(false);
+    setCurrentView('home');
+    ['user-session', 'user-orders', 'user-cart', 'user-wishlist', 'pending-orders', 'recentSearches'].forEach(key => localStorage.removeItem(key));
   };
 
   const loadRecentSearches = () => {
@@ -1469,6 +1483,7 @@ const PotMarket = () => {
 
   // Auth functions
   const login = (email, password) => {
+    clearUserState();
     return fetch(`${API_BASE.replace('/api','')}/api/auth/login`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
       body: JSON.stringify({ email, password })
@@ -1484,26 +1499,11 @@ const PotMarket = () => {
       if (result && result.user) {
         setUser(result.user);
         setIsLoggedIn(true);
+        setShowEntryLogin(false);
         localStorage.setItem('user-session', JSON.stringify(result.user));
         setShowLogin(false);
 
-        // fetch persisted user data
-        try {
-          const dataRes = await fetch(`${API_BASE.replace('/api','')}/api/users/${result.user.id}/data`, { credentials: 'include' });
-          if (dataRes.ok) {
-            const payload = await dataRes.json();
-            if (payload && payload.data) {
-              setCart(payload.data.cart || []);
-              setWishlist(payload.data.wishlist || []);
-              setOrders(payload.data.orders || []);
-              localStorage.setItem('user-wishlist', JSON.stringify(payload.data.wishlist || []));
-              localStorage.setItem('user-cart', JSON.stringify(payload.data.cart || []));
-              localStorage.setItem('user-orders', JSON.stringify(payload.data.orders || []));
-            }
-          }
-        } catch (e) {
-          console.warn('Failed to fetch user data after login', e);
-        }
+        await loadUserData(result.user.id);
 
         return true;
       }
@@ -1515,10 +1515,18 @@ const PotMarket = () => {
     });
   };
 
-  const register = (name, email, password) => {
+  const requestRegistrationOtp = (name, email, phone, password) => {
+    return fetch(`${API_BASE.replace('/api','')}/api/auth/register/request-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ name, email, phone, password }) }).then(async response => { if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.message || 'Unable to send OTP'); } return true; }).catch(error => { console.warn('OTP request error:', error); return error.message || 'Unable to send OTP'; });
+  };
+
+  const requestPasswordOtp = email => fetch(`${API_BASE.replace('/api','')}/api/auth/password/request-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email }) }).then(async response => { if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.message || 'Unable to send reset code'); } return true; }).catch(error => error.message || 'Unable to send reset code');
+  const resetPassword = (email, otp, password) => fetch(`${API_BASE.replace('/api','')}/api/auth/password/reset`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email, otp, password }) }).then(async response => { if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.message || 'Unable to reset password'); } return true; }).catch(error => error.message || 'Unable to reset password');
+
+  const register = (name, email, phone, password, otp) => {
+    clearUserState();
     return fetch(`${API_BASE.replace('/api','')}/api/auth/register`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-      body: JSON.stringify({ name, email, password })
+      body: JSON.stringify({ name, email, phone, password, otp })
     })
     .then(async res => {
       if (!res.ok) {
@@ -1531,6 +1539,7 @@ const PotMarket = () => {
       if (result && result.user) {
         setUser(result.user);
         setIsLoggedIn(true);
+        setShowEntryLogin(false);
         localStorage.setItem('user-session', JSON.stringify(result.user));
         setShowRegister(false);
         return true;
@@ -1539,7 +1548,7 @@ const PotMarket = () => {
     })
     .catch(err => {
       console.warn('Register error:', err);
-      return false;
+      return err.message || 'Registration failed';
     });
   };
 
@@ -1548,9 +1557,7 @@ const PotMarket = () => {
     try {
       fetch(`${API_BASE.replace('/api','')}/api/auth/logout`, { method: 'POST', credentials: 'include' }).catch(() => {});
     } catch (e) { /* ignore */ }
-    setUser(null);
-    setIsLoggedIn(false);
-    localStorage.removeItem('user-session');
+    clearUserState();
   };
 
   const removeRecentSearch = (searchToRemove) => {
@@ -2752,40 +2759,40 @@ const PotMarket = () => {
 
   const Dashboard = () => (
     // Position the dashboard to start aligned with the Filters sidebar (sticky top-24)
-    <aside className={`${showDashboard ? 'translate-x-0' : '-translate-x-full'} fixed left-0 top-24 bottom-0 w-64 bg-white shadow-2xl z-40 transition-transform duration-300 ease-in-out flex flex-col` }>
-      <div className="p-4 border-b">
-        <div className="flex items-center justify-between mb-4">
+    <aside className={`${showDashboard ? 'translate-x-0' : '-translate-x-full'} fixed left-0 top-20 sm:top-24 bottom-0 w-[min(78vw,16rem)] sm:w-64 bg-white shadow-2xl z-40 transition-transform duration-300 ease-in-out flex flex-col` }>
+      <div className="p-3 sm:p-4 border-b">
+        <div className="flex items-center justify-between mb-2 sm:mb-4">
           {/* Icon + title to mirror Filters header */}
-          <h2 className="font-bold text-lg flex items-center gap-2 text-green-700">
-            <Filter className="w-5 h-5" />
+          <h2 className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2 text-green-700">
+            <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
             Dashboard
           </h2>
         </div>
         {isLoggedIn && (
-          <p className="text-sm text-gray-600 mt-0">Welcome, {user.name}</p>
+          <p className="text-xs sm:text-sm text-gray-600 mt-0 truncate">Welcome, {user.name}</p>
         )}
       </div>
 
       {/* Close button placed inside the white dashboard panel above the options so it appears beside the options list */}
-      <div className="px-4">
-        <div className="flex justify-end -mt-2 mb-2">
+      <div className="px-3 sm:px-4">
+        <div className="flex justify-end -mt-1 sm:-mt-2 mb-1 sm:mb-2">
           <button
             onClick={() => setShowDashboard(false)}
             aria-label="Close dashboard"
             className="p-1 rounded-md hover:bg-gray-100"
           >
-            <X className="w-5 h-5 text-gray-600 hover:text-gray-800" />
+            <X className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600 hover:text-gray-800" />
           </button>
         </div>
       </div>
 
-      <nav className="px-4 space-y-2 overflow-y-auto flex-1 dashboard-nav">
+      <nav className="px-3 sm:px-4 space-y-1 sm:space-y-2 overflow-y-auto flex-1 dashboard-nav">
         <button
           onClick={() => {
             setCurrentView('home');
             setShowDashboard(false);
           }}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition ${
+          className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 rounded-lg text-left text-sm sm:text-base transition ${
             currentView === 'home'
               ? 'bg-green-100 text-green-700 font-semibold'
               : 'hover:bg-gray-100 text-gray-700'
@@ -3035,6 +3042,21 @@ const PotMarket = () => {
           </button>
         </div>
 
+        {isLoggedIn && (
+          <div className="pt-4 mt-4 border-t">
+            <button
+              onClick={() => {
+                logout();
+                setShowDashboard(false);
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left text-red-600 hover:bg-red-50 transition"
+            >
+              <LogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
+          </div>
+        )}
+
         {!isLoggedIn && (
           <div className="pt-4 border-t">
             <button
@@ -3065,6 +3087,8 @@ const PotMarket = () => {
   const adminViews = ['posts', 'pages', 'comments', 'media', 'woocommerce', 'templates', 'appearance', 'plugins', 'settings'];
   const isAdminView = adminViews.includes(currentView);
 
+  if (showEntryLogin && !isLoggedIn && !isAdminView) return <ConsumerEntryPage onLogin={login} onRequestOtp={requestRegistrationOtp} onRegister={register} onRequestPasswordOtp={requestPasswordOtp} onResetPassword={resetPassword} onContinueAsGuest={() => setShowEntryLogin(false)} />;
+
   return (
     <div className={`min-h-screen relative ${theme.cardBg} dark:bg-[#05060a]`}>
       {/* Animated Bubble Background */}
@@ -3088,29 +3112,20 @@ const PotMarket = () => {
 
           {/* Header */}
           <header style={darkMode ? { background: 'linear-gradient(90deg,#0f172a,#111827)' } : undefined} className={`custom-dark bg-gradient-to-r ${theme.headerBg} text-white sticky top-0 z-50 shadow-lg`}>
-            <div className="max-w-7xl mx-auto px-4 py-3">
-              <div className="flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3 -ml-14 md:-ml-20">
+            <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
+              <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
                   <div className="cursor-pointer" onClick={() => setShowDashboard(!showDashboard)} title="Menu">
                     <Menu className="w-6 h-6" />
                   </div>
-                  <h1 className="text-2xl font-bold hidden md:inline-flex items-center">{theme.icon} {BUSINESS_CONFIG.BUSINESS_NAME}</h1>
-                  <h1 className="text-xl font-bold md:hidden">{theme.icon}</h1>
+                  <h1 className="text-lg sm:text-2xl font-bold inline-flex items-center whitespace-nowrap">{theme.icon} {BUSINESS_CONFIG.BUSINESS_NAME}</h1>
                 </div>
 
                 
 
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                   {isLoggedIn ? (
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm">Hello, {user.name}</span>
-                      <button
-                        onClick={logout}
-                        className="text-sm bg-green-800 hover:bg-green-900 active:scale-95 active:shadow-lg px-3 py-1 rounded transition"
-                      >
-                        Logout
-                      </button>
-                    </div>
+                    <span className="hidden lg:inline text-sm truncate max-w-40">Hello, {user.name}</span>
                   ) : (
                     <div className="flex items-center gap-4">
                       <button
@@ -3127,9 +3142,9 @@ const PotMarket = () => {
                       </button>
                     </div>
                   )}
-                  <div className="flex items-center gap-8 md:gap-10 ml-2">
+                  <div className="flex items-center gap-3 sm:gap-5 ml-0 sm:ml-2">
                     <div
-                      className="relative cursor-pointer hover:scale-110 transition"
+                      className="relative cursor-pointer hover:scale-110 transition p-1"
                       onClick={() => setShowWishlist(!showWishlist)}
                       title="Wishlist"
                     >
@@ -3141,7 +3156,7 @@ const PotMarket = () => {
                       )}
                     </div>
                     <div
-                      className="relative cursor-pointer hover:scale-110 transition"
+                      className="relative cursor-pointer hover:scale-110 transition p-1"
                       onClick={() => setShowOrders(!showOrders)}
                       title="Orders"
                     >
@@ -3153,7 +3168,7 @@ const PotMarket = () => {
                       )}
                     </div>
                     <div
-                      className="relative cursor-pointer hover:scale-110 transition"
+                      className="relative cursor-pointer hover:scale-110 transition p-1"
                       onClick={() => setShowCart(!showCart)}
                       title="Cart"
                     >
@@ -3166,7 +3181,7 @@ const PotMarket = () => {
                     </div>
 
                     <div
-                      className="relative cursor-pointer hover:scale-110 transition"
+                      className="relative cursor-pointer hover:scale-110 transition p-1 hidden sm:block"
                       onClick={() => setShowThemeSelector(true)}
                       title="Change Theme"
                     >
@@ -3176,7 +3191,7 @@ const PotMarket = () => {
                     <button
                       onClick={() => setDarkMode(!darkMode)}
                       title={darkMode ? 'Switch to light' : 'Switch to dark'}
-                      className="flex items-center gap-2 px-3 py-1 rounded-md hover:scale-105 transition bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-700 hover:to-purple-500 text-white dark:from-purple-500 dark:to-purple-300 dark:hover:from-purple-600 dark:hover:to-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-400 text-sm"
+                      className="hidden sm:flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded-md hover:scale-105 transition bg-gradient-to-r from-purple-600 to-purple-400 hover:from-purple-700 hover:to-purple-500 text-white dark:from-purple-500 dark:to-purple-300 dark:hover:from-purple-600 dark:hover:to-purple-400 focus:outline-none focus:ring-2 focus:ring-purple-300 dark:focus:ring-purple-400 text-sm"
                       aria-pressed={darkMode}
                     >
                       {darkMode ? <Sun className="w-5 h-5 text-white" /> : <Moon className="w-5 h-5 text-white" />}
@@ -3187,13 +3202,13 @@ const PotMarket = () => {
               </div>
 
               {/* Big Search Bar - placed on its own row under header controls */}
-              <div className="w-full mt-3">
-                <div className="max-w-4xl mx-auto px-4">
+              <div className="w-full mt-2 sm:mt-3">
+                <div className="max-w-4xl mx-auto">
                   <div className="relative">
                     <input
                       type="text"
                       placeholder="Search for pots, planters, and more..."
-                      className="w-full px-6 py-3 rounded-full text-gray-800 pr-12 shadow-md"
+                      className="w-full px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-gray-800 pr-11 shadow-md text-sm sm:text-base"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                       onKeyDown={(e) => {
@@ -3225,11 +3240,14 @@ const PotMarket = () => {
               </div>
 
               {/* Categories */}
-              <div className="flex gap-8 mt-3 overflow-x-auto pb-2 categories-row">
+              <div className="flex gap-2 sm:gap-4 mt-2 sm:mt-3 overflow-x-auto pb-1.5 sm:pb-2 categories-row">
                 {categories.map(cat => (
                   <button
                     key={cat}
-                    onClick={() => setSelectedCategory(cat)}
+                    onClick={() => {
+                      setSelectedCategory(cat);
+                      setCurrentView('home');
+                    }}
                     className={`category-btn ${selectedCategory === cat ? 'selected' : ''}`}
                     aria-pressed={selectedCategory === cat}
                   >
@@ -3242,17 +3260,17 @@ const PotMarket = () => {
 
       {/* Trust Badges */}
       <div className="bg-white dark:bg-transparent border-b dark:border-gray-700">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex justify-around text-sm">
-          <div className="flex items-center gap-2">
-            <Truck className="w-5 h-5 text-green-600" />
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2 sm:py-3 grid grid-cols-3 gap-1 sm:gap-2 text-[10px] sm:text-sm">
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center">
+            <Truck className="w-5 h-5 text-green-600 shrink-0" />
             <span>Free Delivery</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-green-600" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center">
+            <Shield className="w-5 h-5 text-green-600 shrink-0" />
             <span>Secure Payment</span>
           </div>
-          <div className="flex items-center gap-2">
-            <RotateCcw className="w-5 h-5 text-green-600" />
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 text-center">
+            <RotateCcw className="w-5 h-5 text-green-600 shrink-0" />
             <span>Easy Returns</span>
           </div>
         </div>
@@ -3271,7 +3289,7 @@ const PotMarket = () => {
               <div className="ml-3">
                 <p className="text-sm text-orange-800">
                   <strong>Payment Verification Required:</strong> You have {orders.filter(order => order.status === 'Pending Payment' || order.status === 'Payment Pending').length} order(s) waiting for payment verification.
-                  Please complete your payment and click "Verify Payment" in your orders.
+                  Please complete payment in the provider checkout. Your order updates automatically after server verification.
                 </p>
               </div>
             </div>
@@ -3287,12 +3305,12 @@ const PotMarket = () => {
         </div>
       )}
 
-      <div className={`max-w-7xl mx-auto px-4 py-6 flex gap-6 transition-all duration-300 ${showDashboard ? 'lg:ml-64' : ''}`}>
+      <div className={`max-w-7xl mx-auto px-4 py-6 flex flex-col md:flex-row gap-6 min-w-0 transition-all duration-300 ${showDashboard ? 'lg:ml-64' : ''}`}>
   {/* Filters Sidebar */}
-  <aside className={`${showFilters ? 'block' : 'hidden'} md:block w-64 bg-white dark:bg-transparent rounded-lg shadow p-4 h-fit sticky top-24`}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-lg flex items-center gap-2">
-              <Filter className="w-5 h-5" />
+  <aside className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 bg-white dark:bg-transparent rounded-lg shadow p-2.5 sm:p-4 h-fit sticky top-20 md:top-24`}>
+          <div className="flex items-center justify-between mb-2 sm:mb-4">
+            <h3 className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2">
+              <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
               Filters
             </h3>
             <button onClick={() => setShowFilters(false)} className="md:hidden">
@@ -3300,8 +3318,8 @@ const PotMarket = () => {
             </button>
           </div>
 
-          <div className="mb-6">
-            <h4 className="font-semibold mb-2">Price Range</h4>
+          <div className="mb-4 sm:mb-6">
+            <h4 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Price Range</h4>
             <input
               type="range"
               min="0"
@@ -3310,20 +3328,20 @@ const PotMarket = () => {
               onChange={(e) => setPriceRange([0, parseInt(e.target.value)])}
               className="w-full"
             />
-            <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mt-1">
+            <div className="flex justify-between text-xs sm:text-sm text-gray-600 dark:text-gray-400 mt-1">
               <span>₹0</span>
               <span>₹{priceRange[1]}</span>
             </div>
           </div>
 
-          <div className="mb-6">
-            <h4 className="font-semibold mb-2">Size</h4>
-            <div className="flex flex-wrap gap-2">
+          <div className="mb-4 sm:mb-6">
+            <h4 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Size</h4>
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
               {['all', 'Small', 'Medium', 'Large'].map(size => (
                 <button
                   key={size}
                   onClick={() => setSelectedSize(size)}
-                  className={`px-3 py-1 text-sm rounded-full border transition ${
+                    className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full border transition ${
                     selectedSize === size
                       ? 'bg-green-600 text-white border-green-600'
                       : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-100'
@@ -3335,9 +3353,9 @@ const PotMarket = () => {
             </div>
           </div>
 
-          <div className="mb-6">
-            <h4 className="font-semibold mb-2">Rating</h4>
-            <div className="space-y-2">
+          <div className="mb-4 sm:mb-6">
+            <h4 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Rating</h4>
+            <div className="space-y-1.5 sm:space-y-2 text-xs sm:text-sm">
               <label className="flex items-center cursor-pointer">
                 <input
                   type="radio"
@@ -3345,9 +3363,9 @@ const PotMarket = () => {
                   value={0}
                   checked={selectedRating === 0}
                   onChange={(e) => setSelectedRating(Number(e.target.value))}
-                  className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                  className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 border-gray-300 focus:ring-green-500"
                 />
-                <span className="ml-2 text-sm text-gray-700">All Ratings</span>
+                <span className="ml-2 text-xs sm:text-sm text-gray-700">All Ratings</span>
               </label>
               {[5, 4, 3, 2, 1].map(rating => (
                 <label key={rating} className="flex items-center cursor-pointer">
@@ -3357,9 +3375,9 @@ const PotMarket = () => {
                     value={rating}
                     checked={selectedRating === rating}
                     onChange={(e) => setSelectedRating(Number(e.target.value))}
-                    className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                    className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 border-gray-300 focus:ring-green-500"
                   />
-                  <span className="ml-2 text-sm text-gray-700 flex items-center">
+                  <span className="ml-2 text-xs sm:text-sm text-gray-700 flex items-center">
                     {rating} <Star className="w-4 h-4 text-yellow-400 fill-current ml-1" /> stars
                   </span>
                 </label>
@@ -3368,11 +3386,11 @@ const PotMarket = () => {
           </div>
 
           <div>
-            <h4 className="font-semibold mb-2">Sort By</h4>
+            <h4 className="font-semibold text-sm sm:text-base mb-1.5 sm:mb-2">Sort By</h4>
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="w-full border rounded px-3 py-2"
+              className="w-full border rounded px-2 sm:px-3 py-1.5 sm:py-2 text-xs sm:text-sm"
             >
               <option value="relevance">Relevance</option>
               <option value="price-low">Price: Low to High</option>
@@ -3384,9 +3402,9 @@ const PotMarket = () => {
         </aside>
 
         {/* Product Grid */}
-        <main className="flex-1">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-gray-600">
+        <main className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+            <p className="text-gray-600 min-w-0">
               Showing {filteredProducts.length} results
             </p>
             <button
@@ -3399,11 +3417,28 @@ const PotMarket = () => {
           </div>
 
           {currentView === 'order-confirmation' && selectedOrder ? (
-            <div className="bg-white dark:bg-[#0b1220] rounded-lg shadow p-6">
+            <div className="min-h-0 sm:min-h-[70vh] bg-white dark:bg-[#0b1220] rounded-lg shadow p-3 sm:p-6 md:p-10">
               <div className="max-w-4xl mx-auto">
-                <h2 className="text-2xl font-bold mb-4">Order Confirmation</h2>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">Order ID: <span className="font-mono">{selectedOrder.id}</span></p>
-                <p className="text-sm text-gray-600 dark:text-gray-300 mb-4">Status: <strong className="capitalize">{selectedOrder.status || 'Pending'}</strong></p>
+                <div className="text-center border-b pb-4 sm:pb-7 mb-4 sm:mb-7">
+                  <div className="mx-auto mb-3 sm:mb-4 w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 text-green-700 flex items-center justify-center text-2xl sm:text-3xl">✓</div>
+                  <h2 className="text-xl sm:text-3xl font-bold mb-2">Order acknowledged</h2>
+                  <p className="text-xs sm:text-base text-gray-600 dark:text-gray-300">Thank you for shopping with {BUSINESS_CONFIG.BUSINESS_NAME}. Your order has been recorded successfully.</p>
+                  <div className="mt-3 sm:mt-4 flex flex-wrap justify-center gap-x-3 sm:gap-x-6 gap-y-1 sm:gap-y-2 text-[10px] sm:text-sm text-gray-600 dark:text-gray-300">
+                    <span>Order ID: <strong className="font-mono text-gray-900 dark:text-gray-100">{selectedOrder.id}</strong></span>
+                    <span>Placed: <strong className="text-gray-900 dark:text-gray-100">{new Date(selectedOrder.orderDate || selectedOrder.createdAt || Date.now()).toLocaleString()}</strong></span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4 mb-4 sm:mb-7">
+                  <div className="border rounded-lg p-2.5 sm:p-4"><p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500 mb-1">Order status</p><p className="text-sm sm:text-base font-semibold capitalize">{selectedOrder.status || 'Pending'}</p></div>
+                  <div className="border rounded-lg p-2.5 sm:p-4"><p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500 mb-1">Payment status</p><p className="text-sm sm:text-base font-semibold">{selectedOrder.paymentVerified || selectedOrder.paymentStatus === 'Paid' ? 'Paid / Verified' : selectedOrder.paymentMethod === 'cod' ? 'Pay on delivery' : 'Payment pending'}</p></div>
+                  <div className="border rounded-lg p-2.5 sm:p-4"><p className="text-[10px] sm:text-xs uppercase tracking-wide text-gray-500 mb-1">Payment method</p><p className="text-sm sm:text-base font-semibold uppercase">{selectedOrder.paymentMethod || '—'}</p></div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-4 mb-4 sm:mb-7">
+                  <div className="border rounded-lg p-2.5 sm:p-4"><h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Customer</h3><p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{selectedOrder.customerName || selectedOrder.shippingAddress?.name || user?.name || 'Customer'}<br />{selectedOrder.customerEmail || selectedOrder.shippingAddress?.email || user?.email || '—'}<br />{selectedOrder.shippingAddress?.phone || shippingAddress.phone || '—'}</p></div>
+                  <div className="border rounded-lg p-2.5 sm:p-4"><h3 className="text-sm sm:text-base font-semibold mb-1 sm:mb-2">Delivery address</h3><p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300">{selectedOrder.shippingAddress?.name}<br />{selectedOrder.shippingAddress?.address}<br />{selectedOrder.shippingAddress?.city}, {selectedOrder.shippingAddress?.state} {selectedOrder.shippingAddress?.pincode}</p></div>
+                </div>
 
                 {/* If this order was saved locally due to a backend error, show a banner and a retry action */}
                 {(selectedOrder._backendError || selectedOrder._error) && (
@@ -3451,64 +3486,66 @@ const PotMarket = () => {
                   </div>
                 )}
 
-                <div className="mb-4">
-                  <h3 className="font-semibold mb-2">Items</h3>
+                <div className="mb-3 sm:mb-4">
+                  <h3 className="text-sm sm:text-base font-semibold mb-2">Items</h3>
                   <div className="space-y-3">
                     {selectedOrder.items.map(it => (
                       <div key={it.id} className="flex items-center justify-between border-b pb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
-                            <img src={products.find(p => p.id === it.id)?.image || ''} alt={it.name} className="w-full h-full object-contain" />
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                          <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gray-100 rounded flex items-center justify-center shrink-0">
+                            {getOrderItemImage(it) ? <img src={getOrderItemImage(it)} alt={it.name} className="w-full h-full object-contain" onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling.style.display = 'flex'; }} /> : null}
+                            <span className="hidden items-center justify-center text-[10px] text-gray-400">No image</span>
                           </div>
                           <div>
-                            <div className="font-medium">{it.name}</div>
-                            <div className="text-xs text-gray-500">Qty: {it.quantity}</div>
+                            <div className="text-xs sm:text-sm font-medium truncate">{it.name}</div>
+                            <div className="text-[10px] sm:text-xs text-gray-500">Qty: {it.quantity}</div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold">₹{it.price * it.quantity}</div>
-                          <div className="text-xs text-gray-500">₹{it.price} each</div>
+                          <div className="text-sm sm:text-base font-semibold">₹{it.price * it.quantity}</div>
+                          <div className="text-[10px] sm:text-xs text-gray-500">₹{it.price} each</div>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="mb-6 text-right">
-                  <p className="text-lg font-semibold">Total: ₹{selectedOrder.total}</p>
+                <div className="mb-4 sm:mb-6 text-right">
+                  <p className="text-base sm:text-lg font-semibold">Total: ₹{selectedOrder.total}</p>
                 </div>
 
-                <div className="flex items-center justify-between gap-4">
-                  <div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div className="flex-shrink-0">
                     <button onClick={() => { setCurrentView('orders'); }} className="px-4 py-2 bg-gray-200 rounded hover:bg-gray-300">Back to Orders</button>
                   </div>
-                  <div className="flex items-center gap-3">
-                    {(!selectedOrder.paymentVerified && (selectedOrder.paymentMethod === 'card' || selectedOrder.paymentMethod === 'upi')) && (
-                      <button onClick={async () => {
-                        const res = await verifyOrderPayment(selectedOrder.id);
-                        alert(res.message || (res.success ? 'Verified' : 'Failed'));
-                      }} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">Verify Payment</button>
+                  <div className="flex flex-wrap items-center gap-3">
+                    {selectedOrder.id && !String(selectedOrder.id).startsWith('ord_local_') && (
+                      <>
+                        <button onClick={() => openOrderInvoice(selectedOrder)} className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-indigo-600 text-white rounded hover:bg-indigo-700">View invoice</button>
+                        <button onClick={() => openOrderInvoice(selectedOrder)} className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-slate-100 text-slate-700 rounded hover:bg-slate-200">Download invoice PDF</button>
+                      </>
                     )}
-                    <button onClick={() => { setCurrentView('home'); }} className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700">Continue Shopping</button>
+                    {!selectedOrder.paymentVerified && isGatewayPayment(selectedOrder.paymentMethod) && <span className="px-2 sm:px-3 py-1.5 sm:py-2 text-[10px] sm:text-sm text-amber-700 bg-amber-50 rounded">Payment status updates automatically</span>}
+                    <button onClick={() => { setCurrentView('home'); }} className="px-3 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-sm bg-green-600 text-white rounded hover:bg-green-700">Continue Shopping</button>
                   </div>
                 </div>
               </div>
             </div>
           ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-5">
             {filteredProducts.map(product => (
               <div
                 key={product.id}
                 className={`${theme.cardBg} dark:bg-[#0b1220] rounded-lg shadow hover:shadow-xl transition cursor-pointer overflow-hidden border`}
               >
                 <div 
-                  className="relative bg-gray-50 h-56 md:h-64 flex items-center justify-center"
+                  className="relative bg-gray-50 aspect-square lg:aspect-[4/3] flex items-center justify-center"
                   onClick={() => setSelectedProduct(product)}
                 >
                   <img 
                     src={product.image} 
                     alt={product.name}
-                    className="max-h-full max-w-full object-contain"
+                    className="w-full h-full object-contain"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
@@ -3518,12 +3555,12 @@ const PotMarket = () => {
                     No image
                   </div>
                   {product.prime && (
-                    <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                    <div className="absolute top-1 left-1 sm:top-2 sm:left-2 bg-blue-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                       PRIME
                     </div>
                   )}
                   {product.discount > 0 && (
-                    <div className="absolute top-2 right-2 bg-red-500 text-white text-xs px-2 py-1 rounded">
+                    <div className="absolute top-1 right-1 sm:top-2 sm:right-2 bg-red-500 text-white text-[9px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                       {product.discount}% OFF
                     </div>
                   )}
@@ -3532,10 +3569,10 @@ const PotMarket = () => {
                       e.stopPropagation();
                       toggleWishlist(product);
                     }}
-                    className="absolute bottom-2 right-2 bg-white rounded-full p-2 shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300"
+                    className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300"
                   >
                     <Heart
-                      className={`w-5 h-5 transition-colors duration-300 ${
+                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300 ${
                         wishlist.find(item => item.id === product.id)
                           ? 'fill-red-500 text-red-500'
                           : 'text-gray-400 hover:text-red-400'
@@ -3544,26 +3581,26 @@ const PotMarket = () => {
                   </button>
                 </div>
 
-                <div className="p-5">
-                  <h3 className="font-semibold mb-1 truncate">{product.name}</h3>
+                <div className="p-1.5 sm:p-5">
+                  <h3 className="font-semibold mb-1 truncate text-[10px] sm:text-base">{product.name}</h3>
                   
                   <div className="flex items-center gap-1 mb-2">
-                    <div className="flex items-center bg-green-600 text-white px-2 py-0.5 rounded text-xs gap-1">
+                    <div className="flex items-center bg-green-600 text-white px-1 sm:px-2 py-0.5 rounded text-[9px] sm:text-xs gap-0.5 sm:gap-1">
                       <span>{product.rating}</span>
                       <Star className="w-3 h-3 fill-current" />
                     </div>
-                    <span className="text-xs text-gray-500">({product.reviews})</span>
+                    <span className="text-[9px] sm:text-xs text-gray-500">({product.reviews})</span>
                   </div>
 
                   <div className="mb-2">
                     <div className="flex items-baseline gap-2">
-                      <span className="text-2xl font-bold">₹{product.price}</span>
-                      <span className="text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
+                      <span className="text-[13px] sm:text-2xl font-bold">₹{product.price}</span>
+                      <span className="text-[10px] sm:text-sm text-gray-500 line-through">₹{product.originalPrice}</span>
                     </div>
-                    <p className="text-xs text-green-600">Save ₹{product.originalPrice - product.price}</p>
+                    <p className="text-[9px] sm:text-xs text-green-600">Save ₹{product.originalPrice - product.price}</p>
                   </div>
 
-                  <div className="text-xs text-gray-600 mb-3">
+                  <div className="text-[9px] sm:text-xs text-gray-600 mb-1.5 sm:mb-3 truncate">
                     {product.inStock ? (
                       <span className="text-green-600">✓ In Stock - Delivery by {product.delivery}</span>
                     ) : (
@@ -3577,7 +3614,7 @@ const PotMarket = () => {
                       addToCart(product);
                     }}
                     disabled={!product.inStock}
-                    className={`w-full py-2 rounded-lg font-semibold transition-all duration-300 shadow-md text-white ${
+                    className={`w-full py-1 sm:py-2 rounded-md sm:rounded-lg font-semibold text-[9px] sm:text-base transition-all duration-300 shadow-md text-white ${
                       animatingButton === product.id
                         ? 'bg-blue-500'
                         : product.inStock
@@ -3585,7 +3622,7 @@ const PotMarket = () => {
                           : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                   >
-                    {animatingButton === product.id ? 'Added to cart' : 'Add to Cart'}
+                    {animatingButton === product.id ? <><span className="sm:hidden">Added</span><span className="hidden sm:inline">Added to cart</span></> : <><span className="sm:hidden">Add</span><span className="hidden sm:inline">Add to Cart</span></>}
                   </button>
                 </div>
               </div>
@@ -3755,7 +3792,8 @@ const PotMarket = () => {
                       {order.items.slice(0, 1).map(item => (
                         <div key={item.id} className="flex gap-3">
                           <div className="w-12 h-12 bg-white rounded flex items-center justify-center flex-shrink-0">
-                            <img src={item.image} alt={item.name} className="max-w-full max-h-full object-contain" onError={(e) => e.target.style.display = 'none'} />
+                            {getOrderItemImage(item) ? <img src={getOrderItemImage(item)} alt={item.name} className="max-w-full max-h-full object-contain" onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling.style.display = 'flex'; }} /> : null}
+                            <span className="hidden items-center justify-center text-[10px] text-gray-400">No image</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className={`text-sm font-medium truncate ${theme.textPrimary}`}>{item.name}</h4>
@@ -3871,19 +3909,19 @@ const PotMarket = () => {
       {/* Checkout Modal */}
       {showCheckout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className={`${theme.cardBg} dark:bg-[#0b1220] rounded-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
-            <div className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className={`text-2xl font-bold ${theme.textPrimary}`}>Checkout</h2>
+          <div className={`${theme.cardBg} dark:bg-[#0b1220] rounded-lg w-full max-w-4xl max-h-[94vh] sm:max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
+            <div className="p-3 sm:p-6 min-w-0">
+              <div className="flex items-center justify-between gap-3 mb-6">
+                <h2 className={`text-xl sm:text-2xl font-bold ${theme.textPrimary}`}>Checkout</h2>
                 <button onClick={() => setShowCheckout(false)}>
                   <X className="w-6 h-6" />
                 </button>
               </div>
 
               {/* Progress Steps */}
-              <div className="flex items-center justify-center mb-8">
-                <div className="flex items-center space-x-4">
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+              <div className="flex items-center justify-center mb-5 sm:mb-8 overflow-x-auto">
+                <div className="flex items-center space-x-2 sm:space-x-4 min-w-max text-xs sm:text-sm">
+                  <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full ${
                     checkoutStep === 'address' ? 'bg-green-600 text-white' :
                     ['payment', 'confirmation'].includes(checkoutStep) ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
                   }`}>
@@ -3892,8 +3930,8 @@ const PotMarket = () => {
                   <span className={`text-sm ${checkoutStep === 'address' ? 'text-green-600 font-semibold' : theme.textSecondary}`}>
                     Address
                   </span>
-                  <div className="w-8 h-px bg-gray-300"></div>
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                  <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
+                  <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full ${
                     checkoutStep === 'payment' ? 'bg-green-600 text-white' :
                     checkoutStep === 'confirmation' ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
                   }`}>
@@ -3902,8 +3940,8 @@ const PotMarket = () => {
                   <span className={`text-sm ${checkoutStep === 'payment' ? 'text-green-600 font-semibold' : theme.textSecondary}`}>
                     Payment
                   </span>
-                  <div className="w-8 h-px bg-gray-300"></div>
-                  <div className={`flex items-center justify-center w-8 h-8 rounded-full ${
+                  <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
+                  <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full ${
                     checkoutStep === 'confirmation' ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
                   }`}>
                     3
@@ -3914,13 +3952,13 @@ const PotMarket = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Main Content */}
                 <div>
                   {checkoutStep === 'address' && (
                     <div>
-                      <h3 className={`text-xl font-semibold mb-4 ${theme.textPrimary}`}>Shipping Address</h3>
-                      <form className="space-y-4">
+                      <h3 className={`text-lg sm:text-xl font-semibold mb-3 sm:mb-4 ${theme.textPrimary}`}>Shipping Address</h3>
+                      <form className="space-y-3 sm:space-y-4">
                         <div>
                           <label className={`block text-sm font-medium mb-1 ${theme.textPrimary}`}>Full Name</label>
                           <input
@@ -3954,7 +3992,7 @@ const PotMarket = () => {
                             required
                           />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                           <div>
                             <label className={`block text-sm font-medium mb-1 ${theme.textPrimary}`}>City</label>
                             <input
@@ -4009,44 +4047,24 @@ const PotMarket = () => {
 
                   {checkoutStep === 'payment' && (
                     <div>
-                      <h3 className="text-xl font-semibold mb-4">Payment Method</h3>
-                      <div className="space-y-4">
+                      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Payment Method</h3>
+                      <div className="space-y-2.5 sm:space-y-4">
                         <div
-                          onClick={() => setPaymentMethod('card')}
+                          onClick={() => setPaymentMethod('online')}
                           className={`border rounded-lg p-4 cursor-pointer transition ${
-                            paymentMethod === 'card' ? 'border-green-600 bg-green-50' : 'border-gray-300 hover:border-gray-400'
+                            paymentMethod === 'online' ? 'border-green-600 bg-green-50' : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 sm:gap-3">
                             <input
                               type="radio"
-                              checked={paymentMethod === 'card'}
-                              onChange={() => setPaymentMethod('card')}
+                              checked={paymentMethod === 'online'}
+                              onChange={() => setPaymentMethod('online')}
                               className="w-4 h-4 text-green-600"
                             />
                             <div>
-                              <div className="font-semibold">Credit/Debit Card</div>
-                              <div className="text-sm text-gray-600">Visa, Mastercard, RuPay</div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div
-                          onClick={() => setPaymentMethod('upi')}
-                          className={`border rounded-lg p-4 cursor-pointer transition ${
-                            paymentMethod === 'upi' ? 'border-green-600 bg-green-50' : 'border-gray-300 hover:border-gray-400'
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            <input
-                              type="radio"
-                              checked={paymentMethod === 'upi'}
-                              onChange={() => setPaymentMethod('upi')}
-                              className="w-4 h-4 text-green-600"
-                            />
-                            <div>
-                              <div className="font-semibold">UPI</div>
-                              <div className="text-sm text-gray-600">Paytm, Google Pay, PhonePe, etc. - QR Code will be shown</div>
+                              <div className="text-sm sm:text-base font-semibold">Online payment via Razorpay</div>
+                              <div className="text-xs sm:text-sm text-gray-600">Cards, UPI, net banking, wallets and more</div>
                             </div>
                           </div>
                         </div>
@@ -4057,7 +4075,7 @@ const PotMarket = () => {
                             paymentMethod === 'cod' ? 'border-green-600 bg-green-50' : 'border-gray-300 hover:border-gray-400'
                           }`}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-2 sm:gap-3">
                             <input
                               type="radio"
                               checked={paymentMethod === 'cod'}
@@ -4065,79 +4083,15 @@ const PotMarket = () => {
                               className="w-4 h-4 text-green-600"
                             />
                             <div>
-                              <div className="font-semibold">Cash on Delivery</div>
-                              <div className="text-sm text-gray-600">Pay when you receive your order</div>
+                              <div className="text-sm sm:text-base font-semibold">Cash on Delivery</div>
+                              <div className="text-xs sm:text-sm text-gray-600">Pay when you receive your order</div>
                             </div>
                           </div>
                         </div>
 
-                        {paymentMethod === 'card' && (
-                          <div className="mt-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                            <h4 className="font-semibold mb-4">Card Details</h4>
-                            <div className="space-y-4">
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Card Number</label>
-                                <input
-                                  type="text"
-                                  value={cardDetails.number.replace(/(\d{4})(?=\d)/g, '$1 ')}
-                                  onChange={(e) => {
-                                    const value = e.target.value.replace(/\D/g, '').slice(0, 16);
-                                    setCardDetails(prev => ({ ...prev, number: value }));
-                                  }}
-                                  placeholder="1234 5678 9012 3456"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                  maxLength="19"
-                                />
-                              </div>
+                        {paymentMethod === 'online' && <p className="mt-3 sm:mt-4 p-2.5 sm:p-3 bg-gray-50 border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-600">Razorpay securely handles cards, UPI, wallets and net banking. Your card and UPI details stay with Razorpay.</p>}
 
-                              <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">Expiry Date</label>
-                                  <input
-                                    type="text"
-                                    value={cardDetails.expiry}
-                                    onChange={(e) => {
-                                      const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                                      const formatted = value.length >= 2 ? value.slice(0, 2) + '/' + value.slice(2) : value;
-                                      setCardDetails(prev => ({ ...prev, expiry: formatted }));
-                                    }}
-                                    placeholder="MM/YY"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    maxLength="5"
-                                  />
-                                </div>
-
-                                <div>
-                                  <label className="block text-sm font-medium text-gray-700 mb-2">CVV</label>
-                                  <input
-                                    type="text"
-                                    value={cardDetails.cvv}
-                                    onChange={(e) => {
-                                      const value = e.target.value.replace(/\D/g, '').slice(0, 4);
-                                      setCardDetails(prev => ({ ...prev, cvv: value }));
-                                    }}
-                                    placeholder="123"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                    maxLength="4"
-                                  />
-                                </div>
-                              </div>
-
-                              <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-2">Cardholder Name</label>
-                                <input
-                                  type="text"
-                                  value={cardDetails.name}
-                                  onChange={(e) => setCardDetails(prev => ({ ...prev, name: e.target.value }))}
-                                  placeholder="email@example.com"
-                                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        )}
-
-                        <div className="flex gap-4 mt-6">
+                        <div className="flex flex-col sm:flex-row gap-4 mt-6">
                           <button
                             onClick={() => setCheckoutStep('address')}
                             className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 active:scale-95 active:shadow-lg transition"
@@ -4149,26 +4103,6 @@ const PotMarket = () => {
                               if (!paymentMethod) {
                                 alert('Please select a payment method');
                                 return;
-                              }
-
-                              if (paymentMethod === 'card') {
-                                // Validate card details
-                                if (!cardDetails.number || cardDetails.number.length < 13) {
-                                  alert('Please enter a valid card number (at least 13 digits)');
-                                  return;
-                                }
-                                if (!cardDetails.expiry || cardDetails.expiry.length < 5) {
-                                  alert('Please enter a valid expiry date (MM/YY)');
-                                  return;
-                                }
-                                if (!cardDetails.cvv || cardDetails.cvv.length < 3) {
-                                  alert('Please enter a valid CVV (at least 3 digits)');
-                                  return;
-                                }
-                                if (!cardDetails.name.trim()) {
-                                  alert('Please enter the cardholder name');
-                                  return;
-                                }
                               }
 
                               setCheckoutStep('confirmation');
@@ -4184,9 +4118,9 @@ const PotMarket = () => {
 
                   {checkoutStep === 'confirmation' && (
                     <div>
-                      <h3 className="text-xl font-semibold mb-4">Order Confirmation</h3>
+                      <h3 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Order Confirmation</h3>
                       <div className="space-y-4">
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
                           <div className="flex items-center gap-2 text-green-800 mb-2">
                             <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                             <span className="font-semibold">Order Ready!</span>
@@ -4196,9 +4130,9 @@ const PotMarket = () => {
                           </p>
                         </div>
 
-                        <div className="border rounded-lg p-4">
-                          <h4 className="font-semibold mb-2">Shipping Address</h4>
-                          <p className="text-sm text-gray-600">
+                        <div className="border rounded-lg p-3 sm:p-4">
+                          <h4 className="text-sm sm:text-base font-semibold mb-2">Shipping Address</h4>
+                          <p className="text-xs sm:text-sm text-gray-600">
                             {shippingAddress.name}<br />
                             {shippingAddress.address}<br />
                             {shippingAddress.city}, {shippingAddress.state} {shippingAddress.pincode}<br />
@@ -4206,58 +4140,17 @@ const PotMarket = () => {
                           </p>
                         </div>
 
-                        <div className="border rounded-lg p-4">
-                          <h4 className="font-semibold mb-2">Payment Method</h4>
-                          <p className="text-sm text-gray-600">
-                            {paymentMethod === 'card' && `Credit/Debit Card (**** **** **** ${cardDetails.number.slice(-4)})`}
-                            {paymentMethod === 'upi' && 'UPI'}
+                        <div className="border rounded-lg p-3 sm:p-4">
+                          <h4 className="text-sm sm:text-base font-semibold mb-2">Payment Method</h4>
+                          <p className="text-xs sm:text-sm text-gray-600">
+                            {paymentMethod === 'online' && 'Online payment via Razorpay checkout'}
+                            {paymentMethod === 'upi' && 'UPI via Razorpay checkout'}
                             {paymentMethod === 'cod' && 'Cash on Delivery'}
                           </p>
-                          {paymentMethod === 'upi' && (
-                            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                              <h5 className="font-semibold text-blue-800 mb-3">Scan QR Code to Pay</h5>
-                              <div className="flex flex-col items-center space-y-4">
-                                <div className="bg-white p-4 rounded-lg border-2 border-blue-200">
-                                  {/* UPI QR Code - Static image with dynamic fallback */}
-                                  <img
-                                    src="/upi-qr-code.png"
-                                    alt="UPI QR Code"
-                                    className="w-48 h-48 object-contain"
-                                    onError={(e) => {
-                                      // Fallback to dynamic QR code generation
-                                      e.target.src = generateUpiQrUrl(wooSettings.upiVpaId || wooSettings.upiAddress || BUSINESS_CONFIG.UPI_ID, cartTotal);
-                                      e.target.onError = () => {
-                                        // Final fallback if dynamic QR also fails
-                                        e.target.style.display = 'none';
-                                        e.target.nextSibling.style.display = 'flex';
-                                      };
-                                    }}
-                                  />
-                                  <div className="w-48 h-48 bg-gray-100 border-2 border-dashed border-gray-300 rounded-lg items-center justify-center hidden">
-                                    <div className="text-center">
-                                      <div className="text-4xl mb-2">📱</div>
-                                      <p className="text-sm text-gray-600 font-medium">UPI QR Code</p>
-                                      <p className="text-xs text-gray-500 mt-1">Scan to Pay ₹{cartTotal}</p>
-                                    </div>
-                                  </div>
-                                </div>
-                                <div className="text-center space-y-2">
-                                  <p className="text-sm font-medium text-blue-800">UPI ID: {wooSettings.upiVpaId || wooSettings.upiAddress || BUSINESS_CONFIG.UPI_ID}</p>
-                                  <p className="text-xs text-gray-600 mt-1">Merchant: {wooSettings.storeName || BUSINESS_CONFIG.BUSINESS_NAME}</p>
-                                  <div className="text-xs text-gray-600 space-y-1">
-                                    <p>1. Open your UPI app (Paytm, Google Pay, PhonePe, etc.)</p>
-                                    <p>2. Scan the QR code above</p>
-                                    <p>3. Verify the amount: ₹{cartTotal}</p>
-                                    <p>4. Complete the payment</p>
-                                    <p className="font-semibold text-blue-700 mt-2">5. Click "Verify Payment" below after completing payment</p>
-                                  </div>
-                                </div>
-                              </div>
-                            </div>
-                          )}
+                          {isGatewayPayment(paymentMethod) && <p className="mt-3 text-xs sm:text-sm text-gray-600">Press Place Order to open the Razorpay checkout. Complete the payment and the order will be verified automatically.</p>}
                         </div>
 
-                        <div className="flex gap-4">
+                        <div className="flex flex-col sm:flex-row gap-4">
                           <button
                             onClick={() => setCheckoutStep('payment')}
                             className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 active:scale-95 active:shadow-lg transition"
@@ -4291,41 +4184,67 @@ const PotMarket = () => {
                                   return;
                                 }
 
-                                let transactionId = null;
-
-                                // Process payment if card payment is selected
-                                if (paymentMethod === 'card') {
-                                  alert('Processing payment...');
-                                  const paymentResult = await processCardPayment(cardDetails, cartTotal);
-
-                                  if (paymentResult.status !== 'success') {
-                                    alert('Payment failed. Please try again.');
-                                    return;
-                                  }
-
-                                  transactionId = paymentResult.transactionId;
-                                  alert(`Payment successful! Transaction ID: ${transactionId}`);
-                                }
-
                                 // Ensure we have an email for order confirmation. Prompt guest users if missing.
                                 const resolvedEmail = (user && user.email) || shippingAddress.email || window.prompt('Please enter your email for order confirmation (we will not spam):');
                                 if (!resolvedEmail) {
                                   alert('We need an email address to place the order. Please provide one to continue.');
                                   return;
                                 }
+
+                                let transactionId = null;
+                                let paymentVerified = paymentMethod === 'cod';
+                                let paymentOrderId = null;
+                                let razorpaySignature = null;
+
+                                if (isGatewayPayment(paymentMethod)) {
+                                  const paymentResponse = await fetch(`${API_BASE}/payments/create`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ customerId: user.id, customerName: user.name, customerEmail: user.email, customerPhone: shippingAddress.phone, shippingAddress, paymentMethod, items: cart }) });
+                                  const paymentResult = await paymentResponse.json().catch(() => ({}));
+                                  if (!paymentResponse.ok || !paymentResult.success || !paymentResult.payment?.razorpay_order_id) {
+                                    alert(paymentResult.message || 'Unable to start secure payment. The order was not placed.');
+                                    return;
+                                  }
+                                  try {
+                                    const razorpayPayment = await openRazorpayCheckout({
+                                      key: paymentResult.payment.key_id || BUSINESS_CONFIG.RAZORPAY_KEY_ID,
+                                      amount: Number(paymentResult.payment.amount || 0),
+                                      name: BUSINESS_CONFIG.BUSINESS_NAME,
+                                      description: 'Order payment',
+                                      orderId: paymentResult.payment.razorpay_order_id,
+                                      customer: user?.name || shippingAddress.name,
+                                      contact: shippingAddress.phone,
+                                      email: user?.email || shippingAddress.email || resolvedEmail,
+                                      onSuccess: async () => {},
+                                      onFailure: () => {}
+                                    });
+                                    paymentOrderId = paymentResult.payment.razorpay_order_id;
+                                    transactionId = razorpayPayment.razorpay_payment_id || null;
+                                    razorpaySignature = razorpayPayment.razorpay_signature || null;
+                                    paymentVerified = true;
+                                  } catch (paymentError) {
+                                    alert(paymentError.message || 'Razorpay payment failed. The order was not placed.');
+                                    return;
+                                  }
+                                }
                                 // Create order object for backend
                                 const orderData = {
+                                  userId: user?.id || null,
                                   customerEmail: resolvedEmail,
                                   customerName: (user && user.name) || shippingAddress.name || 'Guest',
                                   items: cart.map(item => ({
                                     id: item.id,
                                     name: item.name,
+                                    image: item.image,
                                     price: item.price,
                                     quantity: item.quantity
                                   })),
                                   total: cartTotal,
                                   shippingAddress: {...shippingAddress, email: resolvedEmail},
-                                  paymentMethod
+                                  paymentMethod,
+                                  paymentVerified,
+                                  transactionId,
+                                  paymentOrderId,
+                                  razorpayPaymentId: transactionId,
+                                  razorpaySignature: paymentMethod === 'online' && transactionId ? razorpaySignature : undefined
                                 };
 
                                 try {
@@ -4360,41 +4279,42 @@ const PotMarket = () => {
                                       total: result.total,
                                       savings: cartSavings,
                                       shippingAddress: {...shippingAddress},
+                                      customerName: orderData.customerName,
+                                      customerEmail: orderData.customerEmail,
                                       paymentMethod,
                                       status: result.status,
+                                      orderStatus: result.status || 'Pending',
+                                      paymentStatus: result.paymentVerified ? 'Paid' : 'Pending',
                                       paymentVerified: result.paymentVerified,
                                       orderDate: new Date().toISOString(),
                                       userId: user.id,
                                       ...(paymentMethod === 'card' && {
                                         paymentDetails: {
                                           transactionId,
-                                          cardLastFour: cardDetails.number.slice(-4),
                                           amount: result.total
                                         }
                                       })
                                     };
 
                                     // Save order locally for frontend display
-                                    const updatedOrders = [...orders, newOrder];
+                                    let updatedOrders = [...orders, newOrder];
                                     setOrders(updatedOrders);
                                     localStorage.setItem('user-orders', JSON.stringify(updatedOrders));
 
                                     // Handle different payment methods
                                     if (paymentMethod === 'cod') {
-                                      alert(result.emailSent ?
-                                        'Order confirmed! A confirmation email has been sent to your email address.' :
-                                        'Order confirmed! (Note: Email confirmation could not be sent)');
-                                    } else if (paymentMethod === 'card') {
-                                      // Verify card payment with backend
-                                      const verificationResult = await verifyCardPayment(result.orderId, transactionId);
-                                      alert(verificationResult.message);
-                                    } else if (paymentMethod === 'upi') {
-                                      alert('Order placed successfully! Please complete your payment and click "Verify Payment" in your orders to confirm.');
+                                      alert('Order confirmed!');
+                                    } else if (isGatewayPayment(paymentMethod)) {
+                                      alert('Payment confirmed and order placed successfully.');
                                     }
 
-                                    // Navigate to a dedicated order confirmation page
-                                    setSelectedOrder(newOrder);
+                                    // Navigate to a dedicated order confirmation page and open the invoice immediately.
+                                    const confirmedOrder = { ...newOrder };
+                                    setSelectedOrder(confirmedOrder);
                                     setCurrentView('order-confirmation');
+                                    setTimeout(() => {
+                                      openOrderInvoice(confirmedOrder, { preventAlert: true });
+                                    }, 250);
 
                                     // Clear cart and reset form
                                     setCart([]);
@@ -4404,68 +4324,15 @@ const PotMarket = () => {
                                       name: '', phone: '', address: '', city: '', state: '', pincode: ''
                                     });
                                     setPaymentMethod('');
-                                    setCardDetails({
-                                      number: '', expiry: '', cvv: '', name: ''
-                                    });
                                   } else {
-                                    // Backend returned failure; create a local pending order so user still sees confirmation
                                     console.warn('Backend returned failure creating order:', result.message);
-                                    const fallbackOrder = {
-                                      id: `ord_local_${Date.now()}`,
-                                      items: [...cart],
-                                      total: cartTotal,
-                                      savings: cartSavings,
-                                      shippingAddress: {...shippingAddress},
-                                      paymentMethod,
-                                      status: 'Pending (local)',
-                                      paymentVerified: false,
-                                      orderDate: new Date().toISOString(),
-                                      userId: user ? user.id : null,
-                                      _backendError: result.message || 'Backend error'
-                                    };
-                                    const updatedOrders = [...orders, fallbackOrder];
-                                    setOrders(updatedOrders);
-                                    localStorage.setItem('user-orders', JSON.stringify(updatedOrders));
-                                    setSelectedOrder(fallbackOrder);
-                                    setCurrentView('order-confirmation');
-                                    setCart([]);
-                                    setShowCheckout(false);
-                                    setCheckoutStep('address');
-                                    // Save to pending queue to retry later
-                                    const pending = JSON.parse(localStorage.getItem('pending-orders') || '[]');
-                                    pending.push({ orderData, createdAt: new Date().toISOString() });
-                                    localStorage.setItem('pending-orders', JSON.stringify(pending));
-                                    alert('Order saved locally due to backend error. It will be retried in background.');
+                                    alert(result.message || 'Payment or order verification failed. The order was not placed.');
+                                    return;
                                   }
                                 } catch (error) {
                                   console.error('Error placing order (network/backend):', error);
-                                  // Network or backend error: fallback to local order confirmation so user isn't blocked
-                                  const fallbackOrder = {
-                                    id: `ord_local_${Date.now()}`,
-                                    items: [...cart],
-                                    total: cartTotal,
-                                    savings: cartSavings,
-                                    shippingAddress: {...shippingAddress},
-                                    paymentMethod,
-                                    status: 'Pending (local)',
-                                    paymentVerified: false,
-                                    orderDate: new Date().toISOString(),
-                                    userId: user ? user.id : null,
-                                    _error: (error && error.message) || 'Network or backend error'
-                                  };
-                                  const updatedOrders = [...orders, fallbackOrder];
-                                  setOrders(updatedOrders);
-                                  localStorage.setItem('user-orders', JSON.stringify(updatedOrders));
-                                  setSelectedOrder(fallbackOrder);
-                                  setCurrentView('order-confirmation');
-                                  setCart([]);
-                                  setShowCheckout(false);
-                                  setCheckoutStep('address');
-                                  // queue for retry
-                                  const pending = JSON.parse(localStorage.getItem('pending-orders') || '[]');
-                                  pending.push({ orderData, createdAt: new Date().toISOString(), error: (error && error.message) || 'unknown' });
-                                  localStorage.setItem('pending-orders', JSON.stringify(pending));
-                                  alert('Order saved locally due to network/backend error. It will be retried in background.');
+                                  alert(error.message || 'Payment verification failed or the payment service is unavailable. The order was not placed.');
+                                  return;
                                 }
                               } catch (error) {
                                 console.error('Validation error:', error);
@@ -4474,7 +4341,7 @@ const PotMarket = () => {
                             }}
                             className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 active:scale-95 active:shadow-lg transition"
                           >
-                            Place Order
+                            {isGatewayPayment(paymentMethod) ? 'Place Order & Pay via Razorpay' : 'Place Order'}
                           </button>
                         </div>
                       </div>
@@ -4484,19 +4351,20 @@ const PotMarket = () => {
 
                 {/* Order Summary */}
                 <div className="lg:sticky lg:top-6">
-                  <div className="bg-gray-50 rounded-lg p-6">
+                  <div className="bg-gray-50 rounded-lg p-4 sm:p-6 min-w-0">
                     <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
 
                     <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
                       {cart.map(item => (
                         <div key={item.id} className="flex gap-3">
                           <div className="w-12 h-12 bg-white rounded flex items-center justify-center flex-shrink-0">
-                            <img
-                              src={item.image}
+                            {getOrderItemImage(item) ? <img
+                              src={getOrderItemImage(item)}
                               alt={item.name}
                               className="max-w-full max-h-full object-contain"
-                              onError={(e) => e.target.style.display = 'none'}
-                            />
+                              onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling.style.display = 'flex'; }}
+                            /> : null}
+                            <span className="hidden items-center justify-center text-[10px] text-gray-400">No image</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className="text-sm font-medium truncate">{item.name}</h4>
@@ -4581,12 +4449,13 @@ const PotMarket = () => {
                       {order.items.slice(0, 1).map(item => (
                         <div key={item.id} className="flex gap-3">
                           <div className="w-12 h-12 bg-gray-50 rounded flex items-center justify-center flex-shrink-0">
-                            <img
-                              src={item.image}
+                            {getOrderItemImage(item) ? <img
+                              src={getOrderItemImage(item)}
                               alt={item.name}
                               className="max-w-full max-h-full object-contain"
-                              onError={(e) => e.target.style.display = 'none'}
-                            />
+                              onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling.style.display = 'flex'; }}
+                            /> : null}
+                            <span className="hidden items-center justify-center text-[10px] text-gray-400">No image</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <h4 className={`text-sm font-medium truncate ${theme.textPrimary}`}>{item.name}</h4>
@@ -4602,6 +4471,17 @@ const PotMarket = () => {
                       <div className="flex justify-between items-center">
                         <span className={`text-sm font-semibold ${theme.textPrimary}`}>Total: ₹{order.total}</span>
                         <div className="flex gap-2 flex-wrap">
+                          {order.id && !String(order.id).startsWith('ord_local_') && (
+                            <button
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                openOrderInvoice(order, { preventAlert: true });
+                              }}
+                              className="bg-indigo-500 hover:bg-indigo-600 active:scale-95 active:shadow-lg text-white px-4 py-2 rounded text-sm font-medium transition"
+                            >
+                              Invoice
+                            </button>
+                          )}
                           <button
                             onClick={() => {
                               setSelectedOrder(order);
@@ -4624,28 +4504,7 @@ const PotMarket = () => {
                               Track Order
                             </button>
                           )}
-                          {(order.status === 'Payment Pending' || order.status === 'Pending Payment') && order.paymentMethod.toLowerCase() !== 'cod' && (
-                            <button
-                              onClick={async () => {
-                                if (order.paymentMethod === 'card') {
-                                  const refId = prompt('Enter your card transaction ID:');
-                                  if (refId) {
-                                    const result = await verifyCardPayment(order.id, refId);
-                                    alert(result.message);
-                                  }
-                                } else if (order.paymentMethod === 'upi') {
-                                  const refId = prompt('Enter your UPI Reference ID:');
-                                  if (refId) {
-                                    const result = await verifyUpiPayment(order.id, refId);
-                                    alert(result.message);
-                                  }
-                                }
-                              }}
-                              className="bg-blue-500 hover:bg-blue-600 active:scale-95 active:shadow-lg text-white px-4 py-2 rounded text-sm font-medium transition"
-                            >
-                              Verify Payment
-                            </button>
-                          )}
+                          {(order.status === 'Payment Pending' || order.status === 'Pending Payment') && order.paymentMethod.toLowerCase() !== 'cod' && <span className="text-xs text-amber-700">Awaiting provider confirmation</span>}
                           {order.status !== 'Cancelled' && !['Delivered', 'Completed'].includes(order.status) && order.status !== 'Payment Pending' && order.status !== 'Pending Payment' && (
                             <button
                               onClick={() => {
@@ -4725,12 +4584,13 @@ const PotMarket = () => {
                     {selectedOrder.items.map(item => (
                       <div key={item.id} className="flex gap-4 border rounded-lg p-4 hover:shadow-md transition">
                         <div className="w-20 h-20 bg-gray-50 rounded flex items-center justify-center flex-shrink-0">
-                          <img
-                            src={item.image}
+                          {getOrderItemImage(item) ? <img
+                            src={getOrderItemImage(item)}
                             alt={item.name}
                             className="max-w-full max-h-full object-contain"
-                            onError={(e) => e.target.style.display = 'none'}
-                          />
+                            onError={(event) => { event.currentTarget.style.display = 'none'; event.currentTarget.nextElementSibling.style.display = 'flex'; }}
+                          /> : null}
+                          <span className="hidden items-center justify-center text-[10px] text-gray-400">No image</span>
                         </div>
                         <div className="flex-1">
                           <h4 className={`font-semibold mb-1 ${theme.textPrimary}`}>{item.name}</h4>
@@ -4795,8 +4655,8 @@ const PotMarket = () => {
                     <h4 className={`font-semibold mb-4 ${theme.textPrimary}`}>Payment Method</h4>
                     <div className="text-sm text-gray-700">
                       <p className={`font-medium ${theme.textPrimary}`}>
-                        {selectedOrder.paymentMethod === 'card' && 'Credit/Debit Card'}
-                        {selectedOrder.paymentMethod === 'upi' && 'UPI'}
+                        {selectedOrder.paymentMethod === 'online' && 'Online payment via Razorpay'}
+                        {selectedOrder.paymentMethod === 'upi' && 'UPI via Razorpay'}
                         {selectedOrder.paymentMethod === 'cod' && 'Cash on Delivery'}
                       </p>
                       {selectedOrder.paymentMethod === 'cod' && (
@@ -4807,34 +4667,7 @@ const PotMarket = () => {
 
                   {/* Action Buttons */}
                   <div className="flex gap-2 flex-wrap">
-                    {(selectedOrder.status === 'Payment Pending' || selectedOrder.status === 'Pending Payment') && selectedOrder.paymentMethod.toLowerCase() !== 'cod' && (
-                      <button
-                        onClick={async () => {
-                          if (selectedOrder.paymentMethod === 'card') {
-                            const refId = prompt('Enter your card transaction ID:');
-                            if (refId) {
-                              const result = await verifyCardPayment(selectedOrder.id, refId);
-                              alert(result.message);
-                              if (result.success) {
-                                setShowOrderDetails(false);
-                              }
-                            }
-                          } else if (selectedOrder.paymentMethod === 'upi') {
-                            const refId = prompt('Enter your UPI Reference ID:');
-                            if (refId) {
-                              const result = await verifyUpiPayment(selectedOrder.id, refId);
-                              alert(result.message);
-                              if (result.success) {
-                                setShowOrderDetails(false);
-                              }
-                            }
-                          }
-                        }}
-                        className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 active:scale-95 active:shadow-lg transition"
-                      >
-                        Verify Payment
-                      </button>
-                    )}
+                    {(selectedOrder.status === 'Payment Pending' || selectedOrder.status === 'Pending Payment') && selectedOrder.paymentMethod.toLowerCase() !== 'cod' && <span className="flex-1 text-center py-3 text-sm text-amber-700 bg-amber-50 rounded-lg">Awaiting provider confirmation</span>}
                     <button
                       onClick={() => {
                         // Could add reorder functionality here
@@ -4928,21 +4761,22 @@ const PotMarket = () => {
 
                     // Update order status
                     const finalReason = cancelReason === 'Other' ? customCancelReason : cancelReason;
-                    const updatedOrders = orders.map(order =>
-                      order.id === orderToCancel.id
-                        ? { ...order, status: 'Cancelled', cancelReason: finalReason, cancelledAt: new Date().toISOString() }
-                        : order
-                    );
-
-                    setOrders(updatedOrders);
-                    localStorage.setItem('user-orders', JSON.stringify(updatedOrders));
-
-                    setShowCancelOrder(false);
-                    setOrderToCancel(null);
-                    setCancelReason('');
-                    setCustomCancelReason('');
-
-                    alert('Order has been cancelled successfully');
+                    fetch(`${API_BASE}/orders/${orderToCancel.id}/cancel`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ customerEmail: orderToCancel.customerEmail || user?.email, reason: finalReason })
+                    }).then(async response => {
+                      const result = await response.json().catch(() => ({}));
+                      if (!response.ok) throw new Error(result.message || 'Cancellation failed');
+                      const updatedOrders = orders.map(order => order.id === orderToCancel.id ? { ...order, ...(result.order || {}), status: 'Cancelled', cancelReason: finalReason, cancelledAt: new Date().toISOString() } : order);
+                      setOrders(updatedOrders);
+                      localStorage.setItem('user-orders', JSON.stringify(updatedOrders));
+                      setShowCancelOrder(false);
+                      setOrderToCancel(null);
+                      setCancelReason('');
+                      setCustomCancelReason('');
+                      alert('Order has been cancelled successfully');
+                    }).catch(error => alert(error.message));
                   }}
                   className="flex-1 bg-red-600 text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition"
                 >

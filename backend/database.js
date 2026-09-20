@@ -13,7 +13,11 @@ const defaultDB = {
   orders: [],
   users: [],
   payments: [],
-  products: []
+  products: [],
+  admins: [],
+  orderStatusHistory: [],
+  notifications: [],
+  auditLogs: []
 };
 
 class Database {
@@ -26,7 +30,8 @@ class Database {
       if (fs.existsSync(DB_PATH)) {
         const rawData = fs.readFileSync(DB_PATH, 'utf8');
         try {
-          return JSON.parse(rawData);
+          const parsed = JSON.parse(rawData);
+          return { ...defaultDB, ...parsed };
         } catch (parseErr) {
           console.error('Database JSON parse error:', parseErr);
           // Try to recover from a backup file
@@ -133,6 +138,13 @@ class Database {
     return newProduct;
   }
 
+  bootstrapProducts(products) {
+    if (this.getProducts().length || !Array.isArray(products)) return this.getProducts();
+    this.data.products = products.map(product => ({ ...product, createdAt: product.createdAt || new Date().toISOString(), updatedAt: new Date().toISOString() }));
+    this.saveData();
+    return this.data.products;
+  }
+
   updateProduct(productId, updates) {
     const products = this.getProducts();
     const index = products.findIndex(p => p.id === productId);
@@ -197,6 +209,61 @@ class Database {
     this.data.payments.push(payment);
     this.saveData();
     return payment;
+  }
+
+  getAdmins() {
+    return this.data.admins || [];
+  }
+
+  getAdminByEmail(email) {
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    return this.getAdmins().find(admin => String(admin.email || '').toLowerCase() === normalizedEmail);
+  }
+
+  addAdmin(admin) {
+    if (!this.data.admins) this.data.admins = [];
+    this.data.admins.push(admin);
+    this.saveData();
+    return admin;
+  }
+
+  updateAdmin(adminId, updates) {
+    const admins = this.getAdmins();
+    const index = admins.findIndex(admin => admin.id === adminId);
+    if (index === -1) return null;
+    admins[index] = { ...admins[index], ...updates };
+    this.saveData();
+    return admins[index];
+  }
+
+  getOrderStatusHistory(orderId) {
+    return (this.data.orderStatusHistory || []).filter(entry => entry.orderId === orderId);
+  }
+
+  addOrderStatusHistory(entry) {
+    if (!this.data.orderStatusHistory) this.data.orderStatusHistory = [];
+    this.data.orderStatusHistory.push(entry);
+    this.saveData();
+    return entry;
+  }
+
+  getNotifications() {
+    return this.data.notifications || [];
+  }
+
+  addNotification(notification) {
+    if (!this.data.notifications) this.data.notifications = [];
+    this.data.notifications.unshift(notification);
+    this.data.notifications = this.data.notifications.slice(0, 200);
+    this.saveData();
+    return notification;
+  }
+
+  addAuditLog(entry) {
+    if (!this.data.auditLogs) this.data.auditLogs = [];
+    this.data.auditLogs.push(entry);
+    this.saveData();
+    return entry;
   }
 
   getThemes() {
