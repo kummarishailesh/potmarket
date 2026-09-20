@@ -5,8 +5,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '')
   const publicHost = String(env.VITE_PUBLIC_HOST || '').trim()
   const backendTarget = String(env.BACKEND_URL || `http://127.0.0.1:${env.BACKEND_PORT || 3001}`).replace(/\/$/, '')
+  const isGitHubPages = String(env.GITHUB_PAGES || '').toLowerCase() === 'true'
 
   return {
+  base: isGitHubPages ? '/potmarket/' : '/',
   logLevel: 'info',
   plugins: [react({
     jsxRuntime: 'automatic'
