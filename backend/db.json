@@ -2732,6 +2732,104 @@
       "gatewayOrderId": null,
       "paidAt": null,
       "createdAt": "2026-09-20T04:49:47.737Z"
+    },
+    {
+      "id": "ord_1789879991836_9818",
+      "orderId": "ord_1789879991836_9818",
+      "userId": null,
+      "customerEmail": "kummarishailesh@gmail.com",
+      "customerName": "k.shailesh kumar",
+      "items": [
+        {
+          "id": 2,
+          "name": "lord shiva Pot",
+          "price": 599,
+          "quantity": 3,
+          "image": "https://user-gen-media-assets.s3.amazonaws.com/seedream_images/638e77bc-6ed4-4d73-9868-f15ca9988b08.png"
+        },
+        {
+          "id": 1,
+          "name": "flower pot",
+          "price": 1000,
+          "quantity": 1,
+          "image": "https://user-gen-media-assets.s3.amazonaws.com/seedream_images/2446b85d-848f-42f9-8d6c-bebd705da30a.png"
+        },
+        {
+          "id": 7,
+          "name": "family homepot Planter",
+          "price": 1699,
+          "quantity": 2,
+          "image": "https://user-gen-media-assets.s3.amazonaws.com/gemini_images/9dabac0e-fafe-4c81-837c-8f554373d27e.png"
+        }
+      ],
+      "total": 7694,
+      "shippingAddress": {
+        "name": "kummari shailesh kumar",
+        "phone": "9866852823",
+        "address": "Vignana Bharathi Institute of Technology (VBIT)\nGhatkesar, Aushapur",
+        "city": "HYDERABAD",
+        "state": "IN-TG",
+        "pincode": "501301",
+        "email": "kummarishailesh@gmail.com"
+      },
+      "paymentMethod": "cod",
+      "status": "created",
+      "orderStatus": "Pending",
+      "paymentStatus": "Pending",
+      "paymentVerified": false,
+      "transactionId": null,
+      "gatewayOrderId": null,
+      "paidAt": null,
+      "createdAt": "2026-09-20T04:53:11.836Z"
+    },
+    {
+      "id": "ord_1789879992260_2363",
+      "orderId": "ord_1789879992260_2363",
+      "userId": null,
+      "customerEmail": "kummarishailesh@gmail.com",
+      "customerName": "k.shailesh kumar",
+      "items": [
+        {
+          "id": 2,
+          "name": "lord shiva Pot",
+          "price": 599,
+          "quantity": 3,
+          "image": "https://user-gen-media-assets.s3.amazonaws.com/seedream_images/638e77bc-6ed4-4d73-9868-f15ca9988b08.png"
+        },
+        {
+          "id": 1,
+          "name": "flower pot",
+          "price": 1000,
+          "quantity": 1,
+          "image": "https://user-gen-media-assets.s3.amazonaws.com/seedream_images/2446b85d-848f-42f9-8d6c-bebd705da30a.png"
+        },
+        {
+          "id": 7,
+          "name": "family homepot Planter",
+          "price": 1699,
+          "quantity": 2,
+          "image": "https://user-gen-media-assets.s3.amazonaws.com/gemini_images/9dabac0e-fafe-4c81-837c-8f554373d27e.png"
+        }
+      ],
+      "total": 7694,
+      "shippingAddress": {
+        "name": "kummari shailesh kumar",
+        "phone": "9866852823",
+        "address": "Vignana Bharathi Institute of Technology (VBIT)\nGhatkesar, Aushapur",
+        "city": "HYDERABAD",
+        "state": "IN-TG",
+        "pincode": "501301",
+        "email": "kummarishailesh@gmail.com"
+      },
+      "paymentMethod": "cod",
+      "status": "created",
+      "orderStatus": "Pending",
+      "paymentStatus": "Pending",
+      "paymentVerified": false,
+      "transactionId": null,
+      "gatewayOrderId": null,
+      "paidAt": null,
+      "createdAt": "2026-09-20T04:53:12.260Z"
     }
   ],
   "users": [
@@ -3242,11 +3340,11 @@
       "id": "admin_1789564104407",
       "name": "Platform Administrator",
       "email": "kummarishailesh@gmail.com",
-      "passwordHash": "pbkdf2_sha512$210000$aade07b7b901f090ba338d98b5de1bb2$0ac45412209d48184f6fcac55c8c3029115ef2f432d2bb1594ce7d72527b8c11dabb3dcd262cdc0775b7e3fcbc414c557f47f7e7c821d7b5bb220ba7f2332c3a",
+      "passwordHash": "pbkdf2_sha512$210000$41c6b522d83b6285be562d17077a7967$757091821e1014c7f36366818fc9c96626947a010cf3e0da21ec47cd94355782a4360c93a75248829d5689fd7ed7093f021d74808a42669b8b91081d62299ac8",
       "role": "super_admin",
       "active": true,
       "createdAt": "2026-09-16T13:08:24.604Z",
-      "updatedAt": "2026-09-20T04:49:40.587Z"
+      "updatedAt": "2026-09-20T05:04:27.008Z"
     }
   ],
   "orderStatusHistory": [
@@ -3558,9 +3656,37 @@
       "status": "Pending",
       "changedBy": "system",
       "createdAt": "2026-09-20T04:49:47.737Z"
+    },
+    {
+      "id": "history_1789879991845",
+      "orderId": "ord_1789879991836_9818",
+      "status": "Pending",
+      "changedBy": "system",
+      "createdAt": "2026-09-20T04:53:11.836Z"
+    },
+    {
+      "id": "history_1789879992264",
+      "orderId": "ord_1789879992260_2363",
+      "status": "Pending",
+      "changedBy": "system",
+      "createdAt": "2026-09-20T04:53:12.260Z"
     }
   ],
   "notifications": [
+    {
+      "id": "notification_1789879992267",
+      "type": "order.created",
+      "message": "New order ord_1789879992260_2363 received",
+      "read": false,
+      "createdAt": "2026-09-20T04:53:12.260Z"
+    },
+    {
+      "id": "notification_1789879991851",
+      "type": "order.created",
+      "message": "New order ord_1789879991836_9818 received",
+      "read": false,
+      "createdAt": "2026-09-20T04:53:11.836Z"
+    },
     {
       "id": "notification_1789879787744",
       "type": "order.created",
