@@ -674,9 +674,10 @@ const PotMarket = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showEntryLogin, setShowEntryLogin] = useState(() => !localStorage.getItem('user-session'));
 
-  // Use relative API base so Vite dev server can proxy '/api' to the backend.
-  // In production the backend serves the same origin so '/api' works there as well.
-  const API_BASE = '/api';
+  // Use a configurable API base so local dev, same-origin hosting, and remote backend hosting
+  // all work without hard-coding a single deployment model.
+  const API_BASE = (import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+  const HEALTH_URL = API_BASE === '/api' ? '/health' : `${API_BASE.replace(/\/api$/, '')}/health`;
 
   const fetchThemes = async () => {
     try {
@@ -936,7 +937,7 @@ const PotMarket = () => {
   // Check backend health on mount
   const checkBackendHealth = async () => {
     try {
-      const response = await fetch('/health', {
+      const response = await fetch(HEALTH_URL, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' }
       });
@@ -947,7 +948,7 @@ const PotMarket = () => {
       }
     } catch (error) {
       console.warn('⚠ Backend health check failed:', error.message);
-      console.warn('Make sure to run: npm start');
+      console.warn('Make sure the backend is deployed and VITE_API_BASE points to it.');
     }
     return false;
   };
