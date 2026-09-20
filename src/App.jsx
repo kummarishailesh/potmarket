@@ -676,7 +676,8 @@ const PotMarket = () => {
 
   // Use a configurable API base so local dev, same-origin hosting, and remote backend hosting
   // all work without hard-coding a single deployment model.
-  const API_BASE = (import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+  const configuredApiBase = (import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+  const API_BASE = configuredApiBase === '/api' || configuredApiBase.endsWith('/api') ? configuredApiBase : `${configuredApiBase}/api`;
   const HEALTH_URL = API_BASE === '/api' ? '/health' : `${API_BASE.replace(/\/api$/, '')}/health`;
 
   const fetchThemes = async () => {
