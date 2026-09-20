@@ -463,10 +463,59 @@ const LoginForm = ({ onLogin, onForgotPassword, onSwitchToRegister }) => {
 };
 
 const ForgotPasswordForm = ({ onRequestOtp, onReset, onBackToLogin }) => {
-  const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [otp, setOtp] = useState(Array(6).fill('')); const [step, setStep] = useState('email'); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
-  const submit = async event => { event.preventDefault(); setBusy(true); setError(''); const result = step === 'email' ? await onRequestOtp(email) : await onReset(email, otp.join(''), password); if (result === true && step === 'email') setStep('reset'); else if (result !== true) setError(typeof result === 'string' ? result : 'Unable to reset password'); else onBackToLogin(); setBusy(false); };
-  const updateOtp = (index, value) => { const digit = value.replace(/\D/g, '').slice(-1); setOtp(current => current.map((item, itemIndex) => itemIndex === index ? digit : item)); if (digit && index < 5) document.getElementById(`reset-otp-${index + 1}`)?.focus(); };
-  return <form onSubmit={submit} className="space-y-4"><h3 className="text-lg font-semibold text-slate-900">{step === 'email' ? 'Reset your password' : 'Set a new password'}</h3>{step === 'email' ? <><label className="block text-sm font-medium">Account email<input type="email" value={email} onChange={event => setEmail(event.target.value)} className="w-full px-3 py-2 border rounded-lg mt-1" required /></label><p className="text-xs text-slate-500">We will send a 6-digit reset code to this email.</p></> : <><div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-800">Reset code sent to <strong>{email}</strong></div><label className="block text-sm font-medium">Enter reset code</label><div className="flex gap-2">{otp.map((digit, index) => <input key={index} id={`reset-otp-${index}`} value={digit} onChange={event => updateOtp(index, event.target.value)} inputMode="numeric" maxLength="1" className="w-full h-11 text-center text-lg font-bold border rounded-lg" required />)}</div><label className="block text-sm font-medium">New password<input type="password" value={password} onChange={event => setPassword(event.target.value)} className="w-full px-3 py-2 border rounded-lg mt-1" minLength="8" required /></label></>}{error && <p className="text-red-500 text-sm">{error}</p>}<button type="submit" disabled={busy} className="w-full bg-green-600 text-white py-2 rounded-lg disabled:opacity-60">{busy ? 'Please wait…' : step === 'email' ? 'Send reset code' : 'Reset password'}</button><button type="button" onClick={onBackToLogin} className="w-full text-sm text-green-700 hover:underline">Back to login</button></form>;
+  const [email, setEmail] = useState(''); const [password, setPassword] = useState(''); const [confirmPassword, setConfirmPassword] = useState(''); const [otp, setOtp] = useState(Array(6).fill('')); const [step, setStep] = useState('email'); const [error, setError] = useState(''); const [busy, setBusy] = useState(false);
+  const otpValue = otp.join('');
+  const otpReady = otpValue.length === 6;
+
+  const submit = async event => {
+    event.preventDefault();
+    setBusy(true); setError('');
+
+    if (step === 'email') {
+      const result = await onRequestOtp(email);
+      if (result === true) {
+        setStep('reset');
+      } else {
+        setError(typeof result === 'string' ? result : 'Unable to send reset code');
+      }
+      setBusy(false);
+      return;
+    }
+
+    if (!otpReady) {
+      setError('Please enter the 6-digit reset code');
+      setBusy(false);
+      return;
+    }
+
+    if (password.length < 8) {
+      setError('New password must be at least 8 characters');
+      setBusy(false);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      setBusy(false);
+      return;
+    }
+
+    const result = await onReset(email, otpValue, password);
+    if (result === true) {
+      onBackToLogin();
+    } else {
+      setError(typeof result === 'string' ? result : 'Unable to reset password');
+    }
+    setBusy(false);
+  };
+
+  const updateOtp = (index, value) => {
+    const digit = value.replace(/\D/g, '').slice(-1);
+    setOtp(current => current.map((item, itemIndex) => itemIndex === index ? digit : item));
+    if (digit && index < 5) document.getElementById(`reset-otp-${index + 1}`)?.focus();
+  };
+
+  return <form onSubmit={submit} className="space-y-4"><h3 className="text-lg font-semibold text-slate-900">{step === 'email' ? 'Reset your password' : 'Set a new password'}</h3>{step === 'email' ? <><label className="block text-sm font-medium">Account email<input type="email" value={email} onChange={event => setEmail(event.target.value)} className="w-full px-3 py-2 border rounded-lg mt-1" required /></label><p className="text-xs text-slate-500">We will send a 6-digit reset code to this email.</p></> : <><div className="rounded-lg bg-emerald-50 border border-emerald-100 p-3 text-sm text-emerald-800">Reset code sent to <strong>{email}</strong></div><label className="block text-sm font-medium">Enter reset code</label><div className="flex gap-2">{otp.map((digit, index) => <input key={index} id={`reset-otp-${index}`} value={digit} onChange={event => updateOtp(index, event.target.value)} inputMode="numeric" maxLength="1" className="w-full h-11 text-center text-lg font-bold border rounded-lg" required />)}</div>{otpReady ? <div className="space-y-3 pt-1"> <label className="block text-sm font-medium">New password<input type="password" value={password} onChange={event => setPassword(event.target.value)} className="w-full px-3 py-2 border rounded-lg mt-1" minLength="8" required /></label><label className="block text-sm font-medium">Confirm password<input type="password" value={confirmPassword} onChange={event => setConfirmPassword(event.target.value)} className="w-full px-3 py-2 border rounded-lg mt-1" minLength="8" required /></label></div> : <p className="text-xs text-slate-500">Enter the full 6-digit code to unlock password creation.</p>}</>}{error && <p className="text-red-500 text-sm">{error}</p>}<button type="submit" disabled={busy} className="w-full bg-green-600 text-white py-2 rounded-lg disabled:opacity-60">{busy ? 'Please wait…' : step === 'email' ? 'Send reset code' : 'Reset password'}</button><button type="button" onClick={onBackToLogin} className="w-full text-sm text-green-700 hover:underline">Back to login</button></form>;
 };
 
 const ENTRY_POT_IMAGES = [
