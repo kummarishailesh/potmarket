@@ -2871,6 +2871,18 @@
       "cart": [],
       "active": true,
       "createdAt": "2026-09-16T17:54:59.168Z"
+    },
+    {
+      "id": "u_demo_potmarket",
+      "name": "PotMarket Demo User",
+      "email": "demo@potmarket.test",
+      "phone": "+15550101234",
+      "passwordHash": "pbkdf2_sha512$210000$a3fa2e3f35608b077429c78499008f8f$385f309fcbd701b5b2179fddff1e0e1f6bda37faf4466713f0c9498bd63a97994bf0dfb6669f93693cad77762252e1af453c874cf2b7de92c64dae568abafec3",
+      "wishlist": [],
+      "cart": [],
+      "active": true,
+      "createdAt": "2026-09-20T00:00:00.000Z",
+      "updatedAt": "2026-09-20T13:11:48.312Z"
     }
   ],
   "payments": [

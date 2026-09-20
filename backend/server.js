@@ -238,8 +238,20 @@ const migrateLegacyUserPasswords = () => {
     });
 };
 
+const ensureDemoUser = () => {
+    const email = 'demo@potmarket.test';
+    const password = 'Demo@12345';
+    const existingUser = db.getUserByEmail(email);
+    if (!existingUser) {
+        db.addUser({ id: 'u_demo_potmarket', name: 'PotMarket Demo User', email, phone: '+15550101234', passwordHash: hashPassword(password), wishlist: [], cart: [], active: true, createdAt: new Date().toISOString() });
+    } else if (process.env.NODE_ENV !== 'production') {
+        db.updateUser(existingUser.id, { passwordHash: hashPassword(password), password: undefined, active: true, updatedAt: new Date().toISOString() });
+    }
+};
+
 ensureBootstrapAdmin();
 migrateLegacyUserPasswords();
+ensureDemoUser();
 db.bootstrapProducts(legacyProducts);
 
 app.post('/api/admin/auth/login', (req, res) => {
