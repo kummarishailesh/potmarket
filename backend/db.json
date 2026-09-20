@@ -3340,11 +3340,11 @@
       "id": "admin_1789564104407",
       "name": "Platform Administrator",
       "email": "kummarishailesh@gmail.com",
-      "passwordHash": "pbkdf2_sha512$210000$7d24dd11eaceaeb196cd5b2307e33d64$d2c3de0813810aabd6d193b29ca27746738538b464a006e8b2f530b611f832b8efe6b1160efb95f32f43b1ddba226c675810df76b57c776c0bedbc9f5eb168f7",
+      "passwordHash": "pbkdf2_sha512$210000$f5791d2ea53f941760f15a2eafb69216$fc418fa45c4ff85cd91f9ad7a44070d38b5553a0953af48f5818418e406bc0dabc9eefa562f11dd964ad2c5bae5c205ffafb5ac38263d5770c77d22e64edabc5",
       "role": "super_admin",
       "active": true,
       "createdAt": "2026-09-16T13:08:24.604Z",
-      "updatedAt": "2026-09-20T05:15:35.775Z"
+      "updatedAt": "2026-09-20T05:29:35.816Z"
     }
   ],
   "orderStatusHistory": [
