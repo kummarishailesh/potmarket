@@ -8,11 +8,23 @@ const createTransporter = () => nodemailer.createTransport({ host: process.env.S
 
 const sendEmail = async ({ to, subject, textContent, htmlContent, attachments = [] }) => {
     if (hasBrevo()) {
-        const response = await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json', accept: 'application/json' }, body: JSON.stringify({ sender: sender(), to: [{ email: to }], subject, textContent, htmlContent, attachment: attachments.map(({ filename, content }) => ({ name: filename, content: content.toString('base64') })) }) });
+        const payload = { sender: sender(), to: [{ email: to }], subject, textContent, htmlContent };
+        if (attachments.length) {
+            payload.attachment = attachments.map(({ filename, content }) => ({ name: filename, content: content.toString('base64') }));
+        }
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', { method: 'POST', headers: { 'api-key': process.env.BREVO_API_KEY, 'Content-Type': 'application/json', accept: 'application/json' }, body: JSON.stringify(payload) });
         if (!response.ok) { const details = await response.text(); throw new Error(`Brevo email failed (${response.status}): ${details.slice(0, 240)}`); }
         return true;
     }
-    if (!hasSmtp()) return false;
+    if (!hasSmtp()) {
+        if (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV) {
+            console.warn(`[DEV EMAIL FALLBACK] Email delivery is not configured. OTP or message would be sent to ${to}.`);
+            console.log(`[DEV EMAIL FALLBACK] Subject: ${subject}`);
+            console.log(`[DEV EMAIL FALLBACK] Body: ${textContent}`);
+            return true;
+        }
+        return false;
+    }
     await createTransporter().sendMail({ from: `PotMarket <${process.env.EMAIL_FROM || process.env.SMTP_USER}>`, to, subject, text: textContent, html: htmlContent, attachments });
     return true;
 };
