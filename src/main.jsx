@@ -6,8 +6,10 @@ import App from './App.jsx';
 import AdminApp from './AdminApp.jsx';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
+const currentPath = window.location.pathname.replace(/\/+$/, '');
+const isAdminRoute = currentPath === '/admin' || currentPath.endsWith('/admin');
 root.render(
   <React.StrictMode>
-    {window.location.pathname.startsWith('/admin') ? <AdminApp /> : <App />}
+    {isAdminRoute ? <AdminApp /> : <App />}
   </React.StrictMode>
 );
