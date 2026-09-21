@@ -643,7 +643,27 @@ const PotMarket = () => {
     { id: 24, name: 'joint family', price: 4659, originalPrice: 6599, rating: 4.3, reviews: 312, image: 'https://i.pinimg.com/236x/3c/ce/dc/3ccedc175520e1f79c8517c23bee0ca9.jpg', category: 'family', discount: 30, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Medium'  },
   ]);
   const getOrderItemImage = item => item?.image || products.find(product => String(product.id) === String(item?.id))?.image || '';
-  useEffect(() => { fetch('/api/products').then(response => response.ok ? response.json() : null).then(async result => { if (result?.products?.length) { setProducts(current => [...current.filter(product => !result.products.some(managed => String(managed.id) === String(product.id))), ...result.products]); return; } const bootstrap = await fetch('/api/products/bootstrap', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ products }) }); const seeded = bootstrap.ok ? await bootstrap.json() : null; if (seeded?.products?.length) setProducts(current => [...current.filter(product => !seeded.products.some(managed => String(managed.id) === String(product.id))), ...seeded.products]); }).catch(() => {}); }, []);
+  useEffect(() => {
+    const refreshProducts = async () => {
+      try {
+        const response = await fetch(`${API_BASE}/products`);
+        const result = response.ok ? await response.json() : null;
+        if (result?.products?.length) {
+          setProducts(current => [...current.filter(product => !result.products.some(managed => String(managed.id) === String(product.id))), ...result.products]);
+          return;
+        }
+        const bootstrap = await fetch(`${API_BASE}/products/bootstrap`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ products }) });
+        const seeded = bootstrap.ok ? await bootstrap.json() : null;
+        if (seeded?.products?.length) setProducts(current => [...current.filter(product => !seeded.products.some(managed => String(managed.id) === String(product.id))), ...seeded.products]);
+      } catch {
+        // Keep the bundled catalog available when the API is temporarily unavailable.
+      }
+    };
+
+    refreshProducts();
+    window.addEventListener('focus', refreshProducts);
+    return () => window.removeEventListener('focus', refreshProducts);
+  }, []);
 
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
