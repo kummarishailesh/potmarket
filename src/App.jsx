@@ -1,5 +1,5 @@
  //app.js
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { ShoppingCart, Search, Heart, Star, Menu, Filter, Truck, Shield, RotateCcw, X, Package, Sprout, FileText, Image, File, MessageSquare, ShoppingBag, Layout, Palette, Puzzle, Settings, Check, Sun, Moon, MapPin, LogOut } from 'lucide-react';
 
 // Animated Bubble Background Component
@@ -1141,6 +1141,18 @@ const PotMarket = () => {
       window.clearInterval(interval);
     };
   }, [user?.id]);
+
+  const savedAddressRef = useRef('');
+  useEffect(() => {
+    if (!user?.id || !shippingAddress.name || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) return undefined;
+    const signature = JSON.stringify(shippingAddress);
+    if (savedAddressRef.current === `${user.id}:${signature}`) return undefined;
+    const timeoutId = window.setTimeout(async () => {
+      const response = await fetch(`${API_BASE.replace('/api', '')}/api/users/${user.id}/data`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ phone: shippingAddress.phone, shippingAddress }) });
+      if (response.ok) savedAddressRef.current = `${user.id}:${signature}`;
+    }, 500);
+    return () => window.clearTimeout(timeoutId);
+  }, [user?.id, shippingAddress.name, shippingAddress.phone, shippingAddress.address, shippingAddress.city, shippingAddress.state, shippingAddress.pincode]);
 
   const clearUserState = () => {
     setUser(null);
