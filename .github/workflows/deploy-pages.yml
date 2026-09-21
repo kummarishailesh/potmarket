@@ -37,7 +37,10 @@ jobs:
           VITE_API_BASE: https://potmarket.onrender.com/api
 
       - name: Enable SPA routes on GitHub Pages
-        run: cp build/index.html build/404.html
+        run: |
+          cp build/index.html build/404.html
+          mkdir -p build/admin
+          cp build/index.html build/admin/index.html
 
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
