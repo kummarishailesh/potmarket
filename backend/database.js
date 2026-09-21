@@ -91,6 +91,15 @@ class Database {
     return this.data.orders || [];
   }
 
+  resetTransactionData() {
+    this.data.orders = [];
+    this.data.payments = [];
+    this.data.orderStatusHistory = [];
+    this.data.notifications = [];
+    this.data.auditLogs = [];
+    return this.saveData();
+  }
+
   addOrder(order) {
     if (!this.data.orders) {
       this.data.orders = [];

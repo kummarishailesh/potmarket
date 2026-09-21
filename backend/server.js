@@ -286,12 +286,12 @@ app.post('/api/admin/auth/login', async (req, res) => {
         clearCookie(res, 'admin_login_challenge');
         return res.status(502).json({ success: false, message: 'Unable to send the admin verification code' });
     }
-    return res.status(202).json({ success: true, requiresOtp: true, message: `A verification code was sent to ${admin.email}` });
+    return res.status(202).json({ success: true, requiresOtp: true, challenge, message: `A verification code was sent to ${admin.email}` });
 });
 
 app.post('/api/admin/auth/verify-otp', (req, res) => {
     const cookies = parseCookies(req.headers.cookie);
-    const challengeKey = cookies.admin_login_challenge;
+    const challengeKey = String(req.body?.challenge || cookies.admin_login_challenge || '').trim();
     const challenge = adminLoginChallenges.get(challengeKey);
     const code = String(req.body?.otp || '').trim();
     if (!challenge || challenge.expiresAt < Date.now()) return res.status(401).json({ success: false, message: 'This admin verification code has expired. Sign in again.' });
@@ -312,6 +312,12 @@ app.post('/api/admin/auth/verify-otp', (req, res) => {
 
 app.post('/api/admin/auth/logout', (req, res) => { clearCookie(res, ADMIN_COOKIE); res.json({ success: true }); });
 app.get('/api/admin/auth/me', requireAdmin, (req, res) => res.json({ success: true, admin: publicAdmin(req.admin) }));
+
+app.post('/api/admin/reset-transaction-data', requireAdmin, (req, res) => {
+    if (req.admin.role !== 'super_admin') return res.status(403).json({ success: false, message: 'Only a super administrator can reset transaction data' });
+    if (!db.resetTransactionData()) return res.status(500).json({ success: false, message: 'Unable to reset transaction data' });
+    return res.json({ success: true, message: 'Orders, payments, confirmations, notifications, and history were cleared' });
+});
 
 app.get('/api/products', (req, res) => res.json({ success: true, products: db.getProducts().filter(product => product.active !== false) }));
 app.post('/api/products/bootstrap', (req, res) => {
