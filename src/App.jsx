@@ -1571,7 +1571,7 @@ const PotMarket = () => {
     clearUserState();
     return fetch(`${API_BASE.replace('/api','')}/api/auth/login`, {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include',
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ email: String(email || '').trim().toLowerCase(), password })
     })
     .then(async res => {
       if (!res.ok) {

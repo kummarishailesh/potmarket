@@ -190,7 +190,8 @@ class Database {
 
   getUserByEmail(email) {
     const users = this.data.users || [];
-    return users.find(user => user.email === email);
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    return users.find(user => String(user.email || '').trim().toLowerCase() === normalizedEmail);
   }
 
   getUserById(userId) {
