@@ -255,7 +255,7 @@ migrateLegacyUserPasswords();
 ensureDemoUser();
 db.bootstrapProducts(legacyProducts);
 
-app.post('/api/admin/auth/login', (req, res) => {
+app.post('/api/admin/auth/login', async (req, res) => {
     const ip = req.ip || req.socket.remoteAddress || 'unknown';
     const attempt = adminLoginAttempts.get(ip) || { count: 0, startedAt: Date.now() };
     if (Date.now() - attempt.startedAt > ADMIN_LOGIN_WINDOW_MS) { attempt.count = 0; attempt.startedAt = Date.now(); }
@@ -272,7 +272,18 @@ app.post('/api/admin/auth/login', (req, res) => {
     const challenge = crypto.randomBytes(24).toString('hex');
     adminLoginChallenges.set(challenge, { adminId: admin.id, otp, expiresAt: Date.now() + 10 * 60 * 1000, attempts: 0 });
     setCookie(res, 'admin_login_challenge', challenge, 10 * 60);
-    sendAdminLoginOtp(admin.email, otp).then(sent => { if (!sent) adminLoginChallenges.delete(challenge); }).catch(() => adminLoginChallenges.delete(challenge));
+    try {
+        const sent = await sendAdminLoginOtp(admin.email, otp);
+        if (!sent) {
+            adminLoginChallenges.delete(challenge);
+            clearCookie(res, 'admin_login_challenge');
+            return res.status(503).json({ success: false, message: 'Admin email delivery is not configured' });
+        }
+    } catch (error) {
+        adminLoginChallenges.delete(challenge);
+        clearCookie(res, 'admin_login_challenge');
+        return res.status(502).json({ success: false, message: 'Unable to send the admin verification code' });
+    }
     return res.status(202).json({ success: true, requiresOtp: true, message: `A verification code was sent to ${admin.email}` });
 });
 
