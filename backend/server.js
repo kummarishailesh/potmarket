@@ -142,6 +142,7 @@ const ADMIN_LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const ADMIN_LOGIN_MAX_ATTEMPTS = 10;
 const adminLoginAttempts = new Map();
 const adminLoginChallenges = new Map();
+const TEST_CUSTOMER_EMAILS = new Set(['backend-check@example.com', 'proxy-test@example.com', 'card-test@example.com', 'upi-test@example.com', 'test@example.com', 'bob@example.com', 'jane@example.com', 'john@example.com']);
 const registrationChallenges = new Map();
 const passwordResetChallenges = new Map();
 
@@ -450,9 +451,10 @@ app.patch('/api/admin/orders/:id/status', requireAdmin, (req, res) => {
 app.get('/api/admin/payments', requireAdmin, (req, res) => { const payments = db.getPayments().map(payment => ({ ...payment, status: payment.status || (payment.verified ? 'Paid' : 'Pending') })); return res.json({ success: true, payments: payments.sort((a, b) => new Date(b.createdAt || b.timestamp) - new Date(a.createdAt || a.timestamp)) }); });
 app.get('/api/admin/users', requireAdmin, (req, res) => {
     const query = sanitizeText(req.query.search).toLowerCase();
-    const records = new Map(db.getUsers().map(user => [String(user.email || user.id).toLowerCase(), { user, orders: db.getOrdersByUser(user.id) }]));
+    const records = new Map(db.getUsers().filter(user => !TEST_CUSTOMER_EMAILS.has(String(user.email || '').toLowerCase())).map(user => [String(user.email || user.id).toLowerCase(), { user, orders: db.getOrdersByUser(user.id) }]));
     db.getOrders().filter(order => order.customerEmail).forEach(order => {
         const key = String(order.customerEmail).toLowerCase();
+        if (TEST_CUSTOMER_EMAILS.has(key)) return;
         if (!records.has(key)) records.set(key, { user: { id: `guest_${key}`, name: order.customerName || 'Guest customer', email: order.customerEmail, phone: '', active: true, createdAt: order.createdAt }, orders: [] });
         records.get(key).orders.push(order);
     });
