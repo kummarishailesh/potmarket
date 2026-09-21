@@ -286,7 +286,7 @@ app.post('/api/payments/create', async (req, res) => {
     try {
         const input = req.body || {};
         const paymentMethod = String(input.paymentMethod || '').toLowerCase();
-        if (paymentMethod !== 'online' || !Array.isArray(input.items) || !input.items.length) {
+        if (!['online', 'upi'].includes(paymentMethod) || !Array.isArray(input.items) || !input.items.length) {
             return res.status(400).json({ success: false, message: 'Select online payment to use Razorpay' });
         }
         const items = input.items.map(item => {
