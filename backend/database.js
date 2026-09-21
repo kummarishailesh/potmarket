@@ -97,6 +97,8 @@ class Database {
     this.data.orderStatusHistory = [];
     this.data.notifications = [];
     this.data.auditLogs = [];
+    this.data.users = [];
+    this.data.userThemes = {};
     return this.saveData();
   }
 

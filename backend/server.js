@@ -254,7 +254,7 @@ const ensureDemoUser = () => {
 
 ensureBootstrapAdmin();
 migrateLegacyUserPasswords();
-ensureDemoUser();
+if (process.env.NODE_ENV !== 'production') ensureDemoUser();
 db.bootstrapProducts(legacyProducts);
 
 app.post('/api/admin/auth/login', async (req, res) => {
@@ -316,7 +316,7 @@ app.get('/api/admin/auth/me', requireAdmin, (req, res) => res.json({ success: tr
 app.post('/api/admin/reset-transaction-data', requireAdmin, (req, res) => {
     if (req.admin.role !== 'super_admin') return res.status(403).json({ success: false, message: 'Only a super administrator can reset transaction data' });
     if (!db.resetTransactionData()) return res.status(500).json({ success: false, message: 'Unable to reset transaction data' });
-    return res.json({ success: true, message: 'Orders, payments, confirmations, notifications, and history were cleared' });
+    return res.json({ success: true, message: 'Customers, orders, payments, confirmations, notifications, and history were cleared' });
 });
 
 app.get('/api/products', (req, res) => res.json({ success: true, products: db.getProducts().filter(product => product.active !== false) }));
