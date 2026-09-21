@@ -1601,7 +1601,9 @@ const PotMarket = () => {
   };
 
   const requestRegistrationOtp = (name, email, phone, password) => {
-    return fetch(`${API_BASE.replace('/api','')}/api/auth/register/request-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ name, email, phone, password }) }).then(async response => { if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.message || 'Unable to send OTP'); } return true; }).catch(error => { console.warn('OTP request error:', error); return error.message || 'Unable to send OTP'; });
+    const normalizedEmail = String(email || '').trim().toLowerCase();
+    const normalizedPhone = String(phone || '').trim();
+    return fetch(`${API_BASE.replace('/api','')}/api/auth/register/request-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ name: String(name || '').trim(), email: normalizedEmail, phone: normalizedPhone, password }) }).then(async response => { if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.message || 'Unable to send OTP'); } return true; }).catch(error => { console.warn('OTP request error:', error); return error.message || 'Unable to send OTP'; });
   };
 
   const requestPasswordOtp = email => fetch(`${API_BASE.replace('/api','')}/api/auth/password/request-otp`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ email }) }).then(async response => { if (!response.ok) { const result = await response.json().catch(() => ({})); throw new Error(result.message || 'Unable to send reset code'); } return true; }).catch(error => error.message || 'Unable to send reset code');
