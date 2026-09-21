@@ -184,7 +184,7 @@ const verifyToken = token => {
 };
 
 const publicAdmin = admin => ({ id: admin.id, name: admin.name, email: admin.email, role: admin.role, createdAt: admin.createdAt });
-const publicUser = user => user && ({ id: user.id, name: user.name, email: user.email, phone: user.phone, shippingAddress: user.shippingAddress || null, createdAt: user.createdAt, active: user.active !== false });
+const publicUser = user => user && ({ id: user.id, name: user.name, email: user.email, phone: user.phone, shippingAddress: user.shippingAddress || null, createdAt: user.createdAt, lastLoginAt: user.lastLoginAt || null, active: user.active !== false });
 const cookieSameSite = process.env.NODE_ENV === 'production' ? 'None' : 'Lax';
 const cookieSecurity = process.env.NODE_ENV === 'production' ? '; Secure' : '';
 const setCookie = (res, name, value, maxAge) => res.setHeader('Set-Cookie', `${name}=${value}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=${cookieSameSite}${cookieSecurity}`);
@@ -710,8 +710,9 @@ app.post('/api/auth/login', (req, res) => {
         if (!valid || user.active === false) return res.status(401).json({ success: false, message: 'Invalid credentials' });
         if (user.password && !user.passwordHash) db.updateUser(user.id, { passwordHash: hashPassword(password), password: undefined });
 
+        const updatedUser = db.updateUser(user.id, { lastLoginAt: new Date().toISOString() }) || user;
         setCookie(res, 'userId', user.id, 30 * 24 * 60 * 60);
-        return res.json({ success: true, user: publicUser(user) });
+        return res.json({ success: true, user: publicUser(updatedUser) });
     } catch (err) {
         console.error('Login error:', err);
         return res.status(500).json({ success: false, message: 'Login failed' });
