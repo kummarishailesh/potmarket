@@ -2,7 +2,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, ArrowDown, ArrowUp, BarChart3, Bell, Box, CheckCircle2, ChevronLeft, ChevronRight, ClipboardList, CreditCard, Download, FileBarChart, LayoutDashboard, LogOut, Menu, Package, Search, ShieldCheck, UserRound, Users, X } from 'lucide-react';
 import './admin.css';
 
-const API = '/api/admin';
+const configuredApiBase = (import.meta.env.VITE_API_BASE || import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '');
+const API = `${configuredApiBase === '/api' || configuredApiBase.endsWith('/api') ? configuredApiBase : `${configuredApiBase}/api`}/admin`;
 const money = value => `₹${Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })}`;
 const date = value => value ? new Date(value).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' }) : '—';
 
