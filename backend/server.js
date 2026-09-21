@@ -479,7 +479,7 @@ app.post('/api/orders', async (req, res) => {
             };
         });
 
-        const computedTotal = Number(order.total) || sanitizedItems.reduce((s, it) => s + (Number(it.price) || 0) * (Number(it.quantity) || 1), 0);
+        const computedTotal = sanitizedItems.reduce((sum, item) => sum + item.price * item.quantity, 0);
         let verifiedPayment = null;
         if (isGatewayPayment(paymentMethod)) {
             if (!order.paymentOrderId || !order.razorpayPaymentId || !order.razorpaySignature) {
