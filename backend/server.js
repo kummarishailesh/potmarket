@@ -184,7 +184,7 @@ const verifyToken = token => {
 };
 
 const publicAdmin = admin => ({ id: admin.id, name: admin.name, email: admin.email, role: admin.role, createdAt: admin.createdAt });
-const publicUser = user => user && ({ id: user.id, name: user.name, email: user.email, phone: user.phone, createdAt: user.createdAt, active: user.active !== false });
+const publicUser = user => user && ({ id: user.id, name: user.name, email: user.email, phone: user.phone, shippingAddress: user.shippingAddress || null, createdAt: user.createdAt, active: user.active !== false });
 const cookieSameSite = process.env.NODE_ENV === 'production' ? 'None' : 'Lax';
 const cookieSecurity = process.env.NODE_ENV === 'production' ? '; Secure' : '';
 const setCookie = (res, name, value, maxAge) => res.setHeader('Set-Cookie', `${name}=${value}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=${cookieSameSite}${cookieSecurity}`);
@@ -450,6 +450,7 @@ app.patch('/api/admin/orders/:id/status', requireAdmin, (req, res) => {
 app.get('/api/admin/payments', requireAdmin, (req, res) => { const payments = db.getPayments().map(payment => ({ ...payment, status: payment.status || (payment.verified ? 'Paid' : 'Pending') })); return res.json({ success: true, payments: payments.sort((a, b) => new Date(b.createdAt || b.timestamp) - new Date(a.createdAt || a.timestamp)) }); });
 app.get('/api/admin/users', requireAdmin, (req, res) => { const query = sanitizeText(req.query.search).toLowerCase(); const users = db.getUsers().filter(user => !query || `${user.name} ${user.email} ${user.phone || ''}`.toLowerCase().includes(query)).map(user => { const orders = db.getOrdersByUser(user.id); return { ...publicUser(user), orderCount: orders.length, totalSpent: orders.filter(order => orderPaymentStatus(order) === 'Paid').reduce((sum, order) => sum + Number(order.total || 0), 0) }; }); return res.json({ success: true, users }); });
 app.get('/api/admin/users/:id', requireAdmin, (req, res) => { const user = db.getUserById(req.params.id); if (!user) return res.status(404).json({ success: false, message: 'User not found' }); return res.json({ success: true, user: { ...publicUser(user), orders: db.getOrdersByUser(user.id).map(normalizeOrder) } }); });
+app.patch('/api/admin/users/:id', requireAdmin, (req, res) => { const user = db.getUserById(req.params.id); if (!user) return res.status(404).json({ success: false, message: 'User not found' }); const phone = sanitizeText(req.body?.phone); const address = req.body?.shippingAddress && typeof req.body.shippingAddress === 'object' ? req.body.shippingAddress : {}; const shippingAddress = { name: sanitizeText(address.name), phone: phone || sanitizeText(address.phone), address: sanitizeText(address.address), city: sanitizeText(address.city), state: sanitizeText(address.state), pincode: sanitizeText(address.pincode) }; const updated = db.updateUser(user.id, { phone: phone || user.phone || '', shippingAddress, updatedAt: new Date().toISOString() }); return res.json({ success: true, user: publicUser(updated) }); });
 app.get('/api/admin/notifications', requireAdmin, (req, res) => res.json({ success: true, notifications: db.getNotifications() }));
 app.get('/api/admin/products', requireAdmin, (req, res) => res.json({ success: true, products: db.getProducts() }));
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
@@ -586,6 +587,7 @@ app.post('/api/orders', async (req, res) => {
         // debug dump sizes
         console.log('[DEBUG] Adding order with id:', newOrder.id, 'itemsCount:', newOrder.items.length, 'total:', newOrder.total);
         try {
+            if (newOrder.userId) db.updateUser(newOrder.userId, { phone: newOrder.shippingAddress.phone || undefined, shippingAddress: newOrder.shippingAddress, updatedAt: new Date().toISOString() });
             db.addOrder(newOrder);
             db.addOrderStatusHistory({ id: `history_${Date.now()}`, orderId: newOrder.id, status: 'Pending', changedBy: 'system', createdAt: newOrder.createdAt });
             if (isGatewayPayment(newOrder.paymentMethod)) {
@@ -735,7 +737,7 @@ app.get('/api/users/:userId/data', (req, res) => {
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
         const orders = db.getOrdersByUser(userId).filter(isPlacedOrder);
-        return res.json({ success: true, data: { cart: user.cart || [], wishlist: user.wishlist || [], orders } });
+        return res.json({ success: true, data: { cart: user.cart || [], wishlist: user.wishlist || [], orders, phone: user.phone || '', shippingAddress: user.shippingAddress || null } });
     } catch (err) {
         console.error('Get user data error:', err);
         return res.status(500).json({ success: false, message: 'Failed to fetch user data' });
@@ -746,11 +748,14 @@ app.get('/api/users/:userId/data', (req, res) => {
 app.post('/api/users/:userId/data', (req, res) => {
     try {
         const { userId } = req.params;
-        const { cart, wishlist } = req.body || {};
+        const { cart, wishlist, phone, shippingAddress } = req.body || {};
         const user = db.getUserById(userId);
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
 
-        const updated = db.updateUser(userId, { cart: cart || user.cart || [], wishlist: wishlist || user.wishlist || [] });
+        const updates = { cart: cart || user.cart || [], wishlist: wishlist || user.wishlist || [] };
+        if (phone !== undefined) updates.phone = sanitizeText(phone);
+        if (shippingAddress && typeof shippingAddress === 'object') updates.shippingAddress = shippingAddress;
+        const updated = db.updateUser(userId, updates);
         return res.json({ success: true, user: updated });
     } catch (err) {
         console.error('Update user data error:', err);

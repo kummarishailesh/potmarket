@@ -1096,6 +1096,7 @@ const PotMarket = () => {
       if (stored) {
         const userData = JSON.parse(stored);
         setUser(userData);
+        if (userData.shippingAddress) setShippingAddress(current => ({ ...current, ...userData.shippingAddress }));
         setIsLoggedIn(true);
         setShowEntryLogin(false);
         return userData;
@@ -1113,6 +1114,7 @@ const PotMarket = () => {
       const result = await response.json();
       if (!response.ok || !result.success) return false;
       const data = result.data || {};
+      if (data.shippingAddress) setShippingAddress(current => ({ ...current, ...data.shippingAddress, phone: data.phone || data.shippingAddress.phone || current.phone }));
       const nextCart = Array.isArray(data.cart) ? data.cart : [];
       const nextWishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
       const nextOrders = (Array.isArray(data.orders) ? data.orders : []).filter(order => !(String(order.id || '').startsWith('ord_local_') && ['card', 'upi'].includes(String(order.paymentMethod || '').toLowerCase()) && order.paymentVerified !== true));
@@ -4254,6 +4256,9 @@ const PotMarket = () => {
                                   alert('Please select a payment method.');
                                   return;
                                 }
+
+                                await fetch(`${API_BASE.replace('/api', '')}/api/users/${user.id}/data`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, credentials: 'include', body: JSON.stringify({ phone: shippingAddress.phone, shippingAddress }) });
+                                setUser(current => ({ ...current, phone: shippingAddress.phone, shippingAddress }));
 
                                 // Ensure we have an email for order confirmation. Prompt guest users if missing.
                                 const resolvedEmail = (user && user.email) || shippingAddress.email || window.prompt('Please enter your email for order confirmation (we will not spam):');
