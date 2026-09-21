@@ -47,6 +47,12 @@ export const sendPasswordResetOtp = async (email, otp) => {
     return true;
 };
 
+export const sendAdminLoginOtp = async (email, otp) => {
+    if (!hasBrevo() && !hasSmtp()) return false;
+    await sendEmail({ to: email, subject: 'PotMarket admin sign-in code', textContent: `Your PotMarket admin sign-in code is ${otp}. It expires in 10 minutes.`, htmlContent: `<div style="font-family:Arial,sans-serif;max-width:600px;color:#17212b"><h2 style="color:#0f766e">PotMarket admin sign-in</h2><p>Use this one-time code to finish signing in:</p><p style="font-size:32px;font-weight:bold;letter-spacing:10px;color:#0f766e">${otp}</p><p>This code expires in <strong>10 minutes</strong> and can be used once.</p></div>` });
+    return true;
+};
+
 export const sendOrderConfirmation = async order => {
         if (!order?.customerEmail || (!hasBrevo() && !hasSmtp())) return false;
         const invoice = await invoicePdf(order);

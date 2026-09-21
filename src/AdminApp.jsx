@@ -10,22 +10,32 @@ const date = value => value ? new Date(value).toLocaleString('en-IN', { dateStyl
 function AdminLogin({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [otp, setOtp] = useState('');
+  const [requiresOtp, setRequiresOtp] = useState(false);
+  const [notice, setNotice] = useState('');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
   const submit = async event => {
     event.preventDefault(); setBusy(true); setError('');
     try {
-      const response = await fetch(`${API}/auth/login`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password }) });
+      const path = requiresOtp ? '/auth/verify-otp' : '/auth/login';
+      const body = requiresOtp ? { otp } : { email, password };
+      const response = await fetch(`${API}${path}`, { method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
       const responseText = await response.text();
       let result = {};
       if (responseText) {
         try { result = JSON.parse(responseText); } catch { throw new Error('The server returned an invalid login response'); }
       }
       if (!response.ok) throw new Error(result.message || 'Unable to sign in');
-      onLogin(result.admin);
+      if (result.requiresOtp) {
+        setRequiresOtp(true);
+        setNotice(result.message || 'A verification code was sent to your admin email.');
+      } else {
+        onLogin(result.admin);
+      }
     } catch (loginError) { setError(loginError.message); } finally { setBusy(false); }
   };
-  return <main className="admin-login-shell"><section className="admin-login-card"><div className="admin-mark"><ShieldCheck size={24} /></div><p className="admin-eyebrow">POTMARKET / CONTROL ROOM</p><h1>Admin sign in</h1><p className="admin-muted">Use an authorized administrator account to continue.</p><form onSubmit={submit} className="admin-form"><label>Email or username<input autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} required /></label><label>Password<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required /></label>{error && <div className="admin-error"><AlertCircle size={16} />{error}</div>}<button className="admin-primary" disabled={busy}>{busy ? 'Checking credentials…' : 'Sign in securely'}</button></form><button className="admin-link" onClick={() => { window.location.href = '/'; }}>Return to store</button></section></main>;
+  return <main className="admin-login-shell"><section className="admin-login-card"><div className="admin-mark"><ShieldCheck size={24} /></div><p className="admin-eyebrow">POTMARKET / CONTROL ROOM</p><h1>{requiresOtp ? 'Verify admin sign in' : 'Admin sign in'}</h1><p className="admin-muted">{requiresOtp ? 'Enter the one-time code sent to your admin email.' : 'Use an authorized administrator account to continue.'}</p><form onSubmit={submit} className="admin-form">{!requiresOtp ? <><label>Email or username<input autoComplete="username" value={email} onChange={event => setEmail(event.target.value)} required /></label><label>Password<input type="password" autoComplete="current-password" value={password} onChange={event => setPassword(event.target.value)} required /></label></> : <label>Verification code<input inputMode="numeric" pattern="[0-9]{6}" maxLength="6" autoComplete="one-time-code" value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, ''))} required /></label>}{notice && <div className="admin-muted">{notice}</div>}{error && <div className="admin-error"><AlertCircle size={16} />{error}</div>}<button className="admin-primary" disabled={busy}>{busy ? 'Please wait…' : requiresOtp ? 'Verify and sign in' : 'Continue'}</button></form>{requiresOtp && <button className="admin-link" onClick={() => { setRequiresOtp(false); setOtp(''); setNotice(''); setError(''); }}>Use different credentials</button>}<button className="admin-link" onClick={() => { window.location.href = '/'; }}>Return to store</button></section></main>;
 }
 
 function StatCard({ label, value, tone = 'teal', icon: Icon }) { return <article className={`stat-card ${tone}`}><div className="stat-icon"><Icon size={18} /></div><p>{label}</p><strong>{value}</strong></article>; }

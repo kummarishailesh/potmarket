@@ -132,7 +132,7 @@ app.get('/', (req, res) => {
 // Simple API routes for orders using the local database helper
 import db from './database.js';
 import { legacyProducts } from './catalog.js';
-import { sendProductAnnouncement, sendRegistrationOtp, sendPasswordResetOtp, sendOrderConfirmation } from './product-email.js';
+import { sendProductAnnouncement, sendRegistrationOtp, sendPasswordResetOtp, sendAdminLoginOtp, sendOrderConfirmation } from './product-email.js';
 import { invoicePdf } from './invoice.js';
 
 const ADMIN_COOKIE = 'admin_session';
@@ -141,6 +141,7 @@ const ADMIN_ROLES = new Set(['admin', 'super_admin']);
 const ADMIN_LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const ADMIN_LOGIN_MAX_ATTEMPTS = 10;
 const adminLoginAttempts = new Map();
+const adminLoginChallenges = new Map();
 const registrationChallenges = new Map();
 const passwordResetChallenges = new Map();
 
@@ -267,6 +268,30 @@ app.post('/api/admin/auth/login', (req, res) => {
         return res.status(401).json({ success: false, message: 'Invalid admin credentials' });
     }
     adminLoginAttempts.delete(ip);
+    const otp = String(Math.floor(100000 + Math.random() * 900000));
+    const challenge = crypto.randomBytes(24).toString('hex');
+    adminLoginChallenges.set(challenge, { adminId: admin.id, otp, expiresAt: Date.now() + 10 * 60 * 1000, attempts: 0 });
+    setCookie(res, 'admin_login_challenge', challenge, 10 * 60);
+    sendAdminLoginOtp(admin.email, otp).then(sent => { if (!sent) adminLoginChallenges.delete(challenge); }).catch(() => adminLoginChallenges.delete(challenge));
+    return res.status(202).json({ success: true, requiresOtp: true, message: `A verification code was sent to ${admin.email}` });
+});
+
+app.post('/api/admin/auth/verify-otp', (req, res) => {
+    const cookies = parseCookies(req.headers.cookie);
+    const challengeKey = cookies.admin_login_challenge;
+    const challenge = adminLoginChallenges.get(challengeKey);
+    const code = String(req.body?.otp || '').trim();
+    if (!challenge || challenge.expiresAt < Date.now()) return res.status(401).json({ success: false, message: 'This admin verification code has expired. Sign in again.' });
+    challenge.attempts += 1;
+    if (challenge.attempts > 5) {
+        adminLoginChallenges.delete(challengeKey);
+        return res.status(429).json({ success: false, message: 'Too many verification attempts. Sign in again.' });
+    }
+    if (code !== challenge.otp) return res.status(401).json({ success: false, message: 'Invalid verification code' });
+    const admin = db.getAdmins().find(item => item.id === challenge.adminId && item.active !== false);
+    adminLoginChallenges.delete(challengeKey);
+    if (!admin) return res.status(403).json({ success: false, message: 'Admin account is inactive' });
+    setCookie(res, 'admin_login_challenge', '', 0);
     setCookie(res, ADMIN_COOKIE, createToken(admin), 8 * 60 * 60);
     db.addAuditLog({ id: `audit_${Date.now()}`, action: 'admin.login', adminId: admin.id, createdAt: new Date().toISOString() });
     return res.json({ success: true, admin: publicAdmin(admin) });
