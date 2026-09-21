@@ -185,8 +185,10 @@ const verifyToken = token => {
 
 const publicAdmin = admin => ({ id: admin.id, name: admin.name, email: admin.email, role: admin.role, createdAt: admin.createdAt });
 const publicUser = user => user && ({ id: user.id, name: user.name, email: user.email, phone: user.phone, createdAt: user.createdAt, active: user.active !== false });
-const setCookie = (res, name, value, maxAge) => res.setHeader('Set-Cookie', `${name}=${value}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`);
-const clearCookie = (res, name) => res.setHeader('Set-Cookie', `${name}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax${process.env.NODE_ENV === 'production' ? '; Secure' : ''}`);
+const cookieSameSite = process.env.NODE_ENV === 'production' ? 'None' : 'Lax';
+const cookieSecurity = process.env.NODE_ENV === 'production' ? '; Secure' : '';
+const setCookie = (res, name, value, maxAge) => res.setHeader('Set-Cookie', `${name}=${value}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=${cookieSameSite}${cookieSecurity}`);
+const clearCookie = (res, name) => res.setHeader('Set-Cookie', `${name}=; Max-Age=0; Path=/; HttpOnly; SameSite=${cookieSameSite}${cookieSecurity}`);
 
 const requireAdmin = (req, res, next) => {
     const cookies = parseCookies(req.headers.cookie);
