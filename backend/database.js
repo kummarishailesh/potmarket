@@ -209,6 +209,12 @@ class Database {
     return null;
   }
 
+  deleteUser(userId) {
+    const before = this.data.users.length;
+    this.data.users = this.getUsers().filter(user => user.id !== userId && String(user.id) !== String(userId));
+    return before !== this.data.users.length && this.saveData();
+  }
+
   getPayments() {
     return this.data.payments || [];
   }
