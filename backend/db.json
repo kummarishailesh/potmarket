@@ -2877,12 +2877,12 @@
       "name": "PotMarket Demo User",
       "email": "demo@potmarket.test",
       "phone": "+15550101234",
-      "passwordHash": "pbkdf2_sha512$210000$a3fa2e3f35608b077429c78499008f8f$385f309fcbd701b5b2179fddff1e0e1f6bda37faf4466713f0c9498bd63a97994bf0dfb6669f93693cad77762252e1af453c874cf2b7de92c64dae568abafec3",
+      "passwordHash": "pbkdf2_sha512$210000$7b3324389aaf01c5dda6ff39f8f52686$75cd9610765262e054c1f29d7f783e672f586a1f4274399e5b6a09c1e5063e8e404e77f1718c28e41bf462ad347d21899bb8d70e75c7be990c4c2e61b82ec4e8",
       "wishlist": [],
       "cart": [],
       "active": true,
       "createdAt": "2026-09-20T00:00:00.000Z",
-      "updatedAt": "2026-09-20T13:11:48.312Z"
+      "updatedAt": "2026-09-21T04:05:39.896Z"
     }
   ],
   "payments": [
@@ -3352,11 +3352,11 @@
       "id": "admin_1789564104407",
       "name": "Platform Administrator",
       "email": "kummarishailesh@gmail.com",
-      "passwordHash": "pbkdf2_sha512$210000$f5791d2ea53f941760f15a2eafb69216$fc418fa45c4ff85cd91f9ad7a44070d38b5553a0953af48f5818418e406bc0dabc9eefa562f11dd964ad2c5bae5c205ffafb5ac38263d5770c77d22e64edabc5",
+      "passwordHash": "pbkdf2_sha512$210000$33e0558013ed2bae968cb5013d02f302$e9476356994740a86b285ce8820629230da5d720a32e12b5e9e41297dfa2dfa2a99ec62311bbcf34e2d2dafbbcab95bf2a67860361aea3c4310e35c1056aba65",
       "role": "super_admin",
       "active": true,
       "createdAt": "2026-09-16T13:08:24.604Z",
-      "updatedAt": "2026-09-20T05:29:35.816Z"
+      "updatedAt": "2026-09-21T04:05:39.793Z"
     }
   ],
   "orderStatusHistory": [
