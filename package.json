@@ -6,6 +6,7 @@
   "dependencies": {
     "cors": "^2.8.5",
     "lucide-react": "^0.294.0",
+    "mongodb": "^7.6.0",
     "nodemailer": "^10.0.10",
     "pdfkit": "^0.20.2",
     "razorpay": "^2.9.6",

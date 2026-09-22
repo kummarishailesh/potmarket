@@ -1,14 +1,15 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { MongoClient } from 'mongodb';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'db.json');
-const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
-const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
-const SUPABASE_TABLE = String(process.env.SUPABASE_TABLE || 'potmarket_state').replace(/[^a-zA-Z0-9_]/g, '');
+const MONGODB_URI = String(process.env.MONGODB_URI || '');
+const MONGODB_DB = String(process.env.MONGODB_DB || 'potmarket');
+const MONGODB_COLLECTION = String(process.env.MONGODB_COLLECTION || 'state');
 
 const defaultDB = {
   themes: {},
@@ -27,7 +28,9 @@ class Database {
   constructor() {
     this.data = this.loadData();
     this.remoteWrite = Promise.resolve();
-    this.remoteEnabled = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+    this.remoteEnabled = Boolean(MONGODB_URI);
+    this.mongoClient = null;
+    this.mongoCollection = null;
   }
 
   async initialize() {
@@ -36,21 +39,20 @@ class Database {
       return;
     }
     try {
-      const response = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1&select=data`, {
-        headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
-      });
-      if (!response.ok) throw new Error(`Supabase read failed (${response.status})`);
-      const rows = await response.json();
-      if (rows[0]?.data && typeof rows[0].data === 'object') {
-        this.data = { ...defaultDB, ...rows[0].data };
+      this.mongoClient = new MongoClient(MONGODB_URI);
+      await this.mongoClient.connect();
+      this.mongoCollection = this.mongoClient.db(MONGODB_DB).collection(MONGODB_COLLECTION);
+      const record = await this.mongoCollection.findOne({ _id: 'potmarket-state' });
+      if (record?.data && typeof record.data === 'object') {
+        this.data = { ...defaultDB, ...record.data };
         this.saveLocalData();
-        console.log('[database] Loaded persistent state from Supabase.');
+        console.log('[database] Loaded persistent state from MongoDB.');
       } else {
         await this.writeRemote();
-        console.log('[database] Initialized Supabase state from local data.');
+        console.log('[database] Initialized MongoDB state from local data.');
       }
     } catch (error) {
-      console.error('[database] Supabase initialization failed:', error.message);
+      console.error('[database] MongoDB initialization failed:', error.message);
       throw error;
     }
   }
@@ -88,7 +90,7 @@ class Database {
     const localSaved = this.saveLocalData();
     if (this.remoteEnabled) {
       this.remoteWrite = this.remoteWrite.then(() => this.writeRemote()).catch(error => {
-        console.error('[database] Supabase write failed:', error.message);
+        console.error('[database] MongoDB write failed:', error.message);
       });
     }
     return localSaved;
@@ -129,17 +131,12 @@ class Database {
   }
 
   async writeRemote() {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
-      method: 'POST',
-      headers: {
-        apikey: SUPABASE_SERVICE_ROLE_KEY,
-        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify({ id: 1, data: this.data, updated_at: new Date().toISOString() })
-    });
-    if (!response.ok) throw new Error(`Supabase write failed (${response.status})`);
+    if (!this.mongoCollection) return;
+    await this.mongoCollection.replaceOne(
+      { _id: 'potmarket-state' },
+      { _id: 'potmarket-state', data: this.data, updatedAt: new Date() },
+      { upsert: true }
+    );
   }
 
   getOrders() {
