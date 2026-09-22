@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const DB_PATH = path.join(__dirname, 'db.json');
+const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'db.json');
 
 const defaultDB = {
   themes: {},
@@ -56,6 +56,7 @@ class Database {
 
   saveData() {
     try {
+      fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
       // Atomic write: write to a temp file then rename to avoid corrupting the DB on partial writes
       const tmpPath = DB_PATH + '.tmp';
       fs.writeFileSync(tmpPath, JSON.stringify(this.data, null, 2), 'utf8');
