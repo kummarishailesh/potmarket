@@ -465,7 +465,22 @@ app.get('/api/admin/users', requireAdmin, (req, res) => {
 app.get('/api/admin/users/:id', requireAdmin, (req, res) => { const user = db.getUserById(req.params.id); if (!user) return res.status(404).json({ success: false, message: 'User not found' }); return res.json({ success: true, user: { ...publicUser(user), orders: db.getOrdersByUser(user.id).map(normalizeOrder) } }); });
 app.delete('/api/admin/users/:id', requireAdmin, (req, res) => res.status(410).json({ success: false, message: 'Customer records are permanent and cannot be deleted' }));
 app.patch('/api/admin/users/:id', requireAdmin, (req, res) => { const user = db.getUserById(req.params.id); if (!user) return res.status(404).json({ success: false, message: 'User not found' }); const phone = sanitizeText(req.body?.phone); const address = req.body?.shippingAddress && typeof req.body.shippingAddress === 'object' ? req.body.shippingAddress : {}; const shippingAddress = { name: sanitizeText(address.name), phone: phone || sanitizeText(address.phone), address: sanitizeText(address.address), city: sanitizeText(address.city), state: sanitizeText(address.state), pincode: sanitizeText(address.pincode) }; const updated = db.updateUser(user.id, { phone: phone || user.phone || '', shippingAddress, updatedAt: new Date().toISOString() }); return res.json({ success: true, user: publicUser(updated) }); });
-app.get('/api/admin/notifications', requireAdmin, (req, res) => res.json({ success: true, notifications: db.getNotifications() }));
+app.get('/api/admin/notifications', requireAdmin, (req, res) => {
+    const notifications = db.getNotifications().map(notification => {
+        const messageOrderId = String(notification.message || '').match(/ord_[A-Za-z0-9_-]+/)?.[0];
+        const order = db.getOrderById(notification.orderId || messageOrderId);
+        const items = Array.isArray(order?.items) ? order.items : [];
+        return {
+            ...notification,
+            orderId: notification.orderId || order?.id || messageOrderId || null,
+            itemName: notification.itemName || items.map(item => item.name).filter(Boolean).join(', ') || null,
+            itemCount: notification.itemCount || items.reduce((sum, item) => sum + Number(item.quantity || 0), 0),
+            customerName: notification.customerName || order?.customerName || null,
+            total: notification.total ?? order?.total ?? null
+        };
+    });
+    return res.json({ success: true, notifications });
+});
 app.get('/api/admin/products', requireAdmin, (req, res) => res.json({ success: true, products: db.getProducts() }));
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
     const body = req.body || {};
@@ -607,7 +622,7 @@ app.post('/api/orders', async (req, res) => {
             if (isGatewayPayment(newOrder.paymentMethod)) {
                 db.addOrderStatusHistory({ id: `history_${Date.now()}_payment`, orderId: newOrder.id, status: 'Payment Initiated', changedBy: 'customer', createdAt: newOrder.createdAt });
             }
-            db.addNotification({ id: `notification_${Date.now()}`, type: 'order.created', message: `New order ${newOrder.id} received`, read: false, createdAt: newOrder.createdAt });
+            db.addNotification({ id: `notification_${Date.now()}`, type: 'order.created', orderId: newOrder.id, itemName: sanitizedItems.map(item => item.name).filter(Boolean).join(', '), itemCount: sanitizedItems.reduce((sum, item) => sum + item.quantity, 0), customerName: newOrder.customerName, total: newOrder.total, message: `New order ${newOrder.id} received`, read: false, createdAt: newOrder.createdAt });
             if (verifiedPayment) {
                 db.addPayment({ id: verifiedPayment.id || `pay_${Date.now()}`, orderId: newOrder.id, provider: verifiedPayment.provider || 'razorpay', amount: newOrder.total, currency: verifiedPayment.currency || 'INR', transactionId: verifiedPayment.transaction_id, method: paymentMethod, status: 'Paid', paymentDate: verifiedPayment.updated_at || newOrder.createdAt, createdAt: newOrder.createdAt, updatedAt: newOrder.createdAt });
             }
