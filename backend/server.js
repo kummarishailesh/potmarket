@@ -315,9 +315,7 @@ app.post('/api/admin/auth/logout', (req, res) => { clearCookie(res, ADMIN_COOKIE
 app.get('/api/admin/auth/me', requireAdmin, (req, res) => res.json({ success: true, admin: publicAdmin(req.admin) }));
 
 app.post('/api/admin/reset-transaction-data', requireAdmin, (req, res) => {
-    if (req.admin.role !== 'super_admin') return res.status(403).json({ success: false, message: 'Only a super administrator can reset transaction data' });
-    if (!db.resetTransactionData()) return res.status(500).json({ success: false, message: 'Unable to reset transaction data' });
-    return res.json({ success: true, message: 'Customers, orders, payments, confirmations, notifications, and history were cleared' });
+    return res.status(410).json({ success: false, message: 'Permanent customer, order, payment, and revenue records cannot be deleted' });
 });
 
 app.get('/api/products', (req, res) => res.json({ success: true, products: db.getProducts().filter(product => product.active !== false) }));
@@ -465,7 +463,7 @@ app.get('/api/admin/users', requireAdmin, (req, res) => {
     return res.json({ success: true, users });
 });
 app.get('/api/admin/users/:id', requireAdmin, (req, res) => { const user = db.getUserById(req.params.id); if (!user) return res.status(404).json({ success: false, message: 'User not found' }); return res.json({ success: true, user: { ...publicUser(user), orders: db.getOrdersByUser(user.id).map(normalizeOrder) } }); });
-app.delete('/api/admin/users/:id', requireAdmin, (req, res) => { const user = db.getUserById(req.params.id); if (!user) return res.status(404).json({ success: false, message: 'User not found' }); if (!db.deleteUser(user.id)) return res.status(500).json({ success: false, message: 'Unable to remove customer' }); return res.json({ success: true, message: 'Customer removed' }); });
+app.delete('/api/admin/users/:id', requireAdmin, (req, res) => res.status(410).json({ success: false, message: 'Customer records are permanent and cannot be deleted' }));
 app.patch('/api/admin/users/:id', requireAdmin, (req, res) => { const user = db.getUserById(req.params.id); if (!user) return res.status(404).json({ success: false, message: 'User not found' }); const phone = sanitizeText(req.body?.phone); const address = req.body?.shippingAddress && typeof req.body.shippingAddress === 'object' ? req.body.shippingAddress : {}; const shippingAddress = { name: sanitizeText(address.name), phone: phone || sanitizeText(address.phone), address: sanitizeText(address.address), city: sanitizeText(address.city), state: sanitizeText(address.state), pincode: sanitizeText(address.pincode) }; const updated = db.updateUser(user.id, { phone: phone || user.phone || '', shippingAddress, updatedAt: new Date().toISOString() }); return res.json({ success: true, user: publicUser(updated) }); });
 app.get('/api/admin/notifications', requireAdmin, (req, res) => res.json({ success: true, notifications: db.getNotifications() }));
 app.get('/api/admin/products', requireAdmin, (req, res) => res.json({ success: true, products: db.getProducts() }));
@@ -744,6 +742,16 @@ app.post('/api/auth/logout', (req, res) => {
         console.error('Logout error:', err);
         return res.status(500).json({ success: false, message: 'Failed to logout' });
     }
+});
+
+app.get('/api/auth/me', (req, res) => {
+    const userId = parseCookies(req.headers.cookie).userId;
+    const user = userId ? db.getUserById(userId) : null;
+    if (!user || user.active === false) {
+        clearCookie(res, 'userId');
+        return res.status(401).json({ success: false, message: 'Customer session not found' });
+    }
+    return res.json({ success: true, user: publicUser(user) });
 });
 
 // Get user data (cart, wishlist, orders)

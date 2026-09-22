@@ -1024,6 +1024,7 @@ const PotMarket = () => {
       loadUserData(session.id);
     } else {
       clearUserState();
+      restoreUserSession();
     }
     // attempt to send any pending orders saved during offline/backend failures
     (async () => {
@@ -1107,6 +1108,24 @@ const PotMarket = () => {
     return false;
   };
 
+  const restoreUserSession = async () => {
+    try {
+      const response = await fetch(`${API_BASE.replace('/api', '')}/api/auth/me`, { credentials: 'include' });
+      if (!response.ok) return false;
+      const result = await response.json();
+      if (!result?.user) return false;
+      setUser(result.user);
+      setIsLoggedIn(true);
+      setShowEntryLogin(false);
+      localStorage.setItem('user-session', JSON.stringify(result.user));
+      await loadUserData(result.user.id);
+      return true;
+    } catch (error) {
+      console.warn('Unable to restore customer session:', error.message);
+      return false;
+    }
+  };
+
   const loadUserData = async userId => {
     if (!userId) return false;
     try {
@@ -1171,7 +1190,8 @@ const PotMarket = () => {
     setShowLogin(false);
     setShowRegister(false);
     setCurrentView('home');
-    ['user-session', 'user-orders', 'user-cart', 'user-wishlist', 'pending-orders', 'recentSearches'].forEach(key => localStorage.removeItem(key));
+    localStorage.removeItem('user-session');
+    localStorage.removeItem('recentSearches');
   };
 
   const loadRecentSearches = () => {
