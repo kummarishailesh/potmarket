@@ -58,7 +58,7 @@ export const sendOrderConfirmation = async order => {
         const invoice = await invoicePdf(order);
         const items = (order.items || []).map(item => `<tr><td class="email-item" style="padding:14px 8px 14px 0;border-bottom:1px solid #ded7d0;color:#334a38;font-weight:600;line-height:1.4;overflow-wrap:anywhere">${item.name || 'Product'} x ${item.quantity || 1}</td><td class="email-price" style="padding:14px 0;border-bottom:1px solid #ded7d0;text-align:right;color:#334a38;white-space:nowrap;vertical-align:top">INR ${(Number(item.price || 0) * Number(item.quantity || 1)).toFixed(2)}</td></tr>`).join('');
         const firstName = String(order.customerName || 'Customer').split(' ')[0];
-        const storeUrl = process.env.STORE_URL || 'http://localhost:3000';
+        const storeUrl = process.env.STORE_URL || 'https://kummarishailesh.github.io/potmarket';
         const htmlContent = `<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>
             @media screen and (max-width: 600px) {
                 .email-shell { padding: 18px 10px !important; }
