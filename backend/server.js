@@ -142,7 +142,7 @@ const ADMIN_LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const ADMIN_LOGIN_MAX_ATTEMPTS = 10;
 const adminLoginAttempts = new Map();
 const adminLoginChallenges = new Map();
-const TEST_CUSTOMER_EMAILS = new Set(['backend-check@example.com', 'proxy-test@example.com', 'card-test@example.com', 'upi-test@example.com', 'test@example.com', 'bob@example.com', 'jane@example.com', 'john@example.com']);
+const TEST_CUSTOMER_EMAILS = new Set();
 const registrationChallenges = new Map();
 const passwordResetChallenges = new Map();
 
@@ -253,6 +253,7 @@ const ensureDemoUser = () => {
     }
 };
 
+await db.initialize();
 ensureBootstrapAdmin();
 migrateLegacyUserPasswords();
 if (process.env.NODE_ENV !== 'production') ensureDemoUser();
@@ -454,7 +455,7 @@ app.get('/api/admin/users', requireAdmin, (req, res) => {
         const key = String(order.customerEmail).toLowerCase();
         if (TEST_CUSTOMER_EMAILS.has(key)) return;
         if (!records.has(key)) records.set(key, { user: { id: `guest_${key}`, name: order.customerName || 'Guest customer', email: order.customerEmail, phone: '', active: true, createdAt: order.createdAt }, orders: [] });
-        records.get(key).orders.push(order);
+        if (!records.get(key).orders.some(existingOrder => existingOrder.id === order.id)) records.get(key).orders.push(order);
     });
     const users = [...records.values()].filter(({ user }) => !query || `${user.name} ${user.email} ${user.phone || ''}`.toLowerCase().includes(query)).map(({ user, orders }) => {
         const latestOrder = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];

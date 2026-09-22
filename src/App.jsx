@@ -1080,11 +1080,17 @@ const PotMarket = () => {
     }
   };
 
+  const normalizeCartItems = items => (Array.isArray(items) ? items : []).map(item => {
+    const price = Number(item.price ?? item.salePrice ?? 0);
+    const originalPrice = Number(item.originalPrice ?? price);
+    return { ...item, price: Number.isFinite(price) ? price : 0, originalPrice: Number.isFinite(originalPrice) ? originalPrice : price, quantity: Math.max(Number(item.quantity) || 1, 1) };
+  }).filter(item => item.id != null);
+
   const loadCart = async () => {
     try {
       const stored = localStorage.getItem('user-cart');
       if (stored) {
-        setCart(JSON.parse(stored));
+        setCart(normalizeCartItems(JSON.parse(stored)));
       }
     } catch (error) {
       console.log('No existing cart found');
@@ -1134,7 +1140,7 @@ const PotMarket = () => {
       if (!response.ok || !result.success) return false;
       const data = result.data || {};
       if (data.shippingAddress) setShippingAddress(current => ({ ...current, ...data.shippingAddress, phone: data.phone || data.shippingAddress.phone || current.phone }));
-      const nextCart = Array.isArray(data.cart) ? data.cart : [];
+      const nextCart = normalizeCartItems(Array.isArray(data.cart) ? data.cart : []);
       const nextWishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
       const nextOrders = (Array.isArray(data.orders) ? data.orders : []).filter(order => !(String(order.id || '').startsWith('ord_local_') && ['card', 'upi'].includes(String(order.paymentMethod || '').toLowerCase()) && order.paymentVerified !== true));
       setCart(nextCart);
@@ -1482,10 +1488,12 @@ const PotMarket = () => {
     setAnimatingButton(product.id);
     setTimeout(() => setAnimatingButton(null), 600);
     
-    const existing = cart.find(item => item.id === product.id);
+    const normalizedCart = normalizeCartItems(cart);
+    const normalizedProduct = normalizeCartItems([{ ...product, quantity: 1 }])[0];
+    const existing = normalizedCart.find(item => item.id === product.id);
     const updatedCart = existing
-      ? cart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
-      : [...cart, { ...product, quantity: 1 }];
+      ? normalizedCart.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item)
+      : [...normalizedCart, normalizedProduct];
 
     setCart(updatedCart);
     saveCart(updatedCart);
@@ -1583,8 +1591,8 @@ const PotMarket = () => {
       return 0;
     });
 
-  const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
-  const cartSavings = cart.reduce((sum, item) => sum + ((item.originalPrice - item.price) * item.quantity), 0);
+  const cartTotal = normalizeCartItems(cart).reduce((sum, item) => sum + (item.price * item.quantity), 0);
+  const cartSavings = normalizeCartItems(cart).reduce((sum, item) => sum + Math.max((item.originalPrice - item.price) * item.quantity, 0), 0);
 
   // Auth functions
   const login = (email, password) => {
@@ -4778,15 +4786,6 @@ const PotMarket = () => {
                   {/* Action Buttons */}
                   <div className="flex gap-2 flex-wrap">
                     {(selectedOrder.status === 'Payment Pending' || selectedOrder.status === 'Pending Payment') && selectedOrder.paymentMethod.toLowerCase() !== 'cod' && <span className="flex-1 text-center py-3 text-sm text-amber-700 bg-amber-50 rounded-lg">Awaiting provider confirmation</span>}
-                    <button
-                      onClick={() => {
-                        // Could add reorder functionality here
-                        alert('Reorder functionality coming soon!');
-                      }}
-                      className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 active:scale-95 active:shadow-lg transition"
-                    >
-                      Reorder
-                    </button>
                     <button
                       onClick={() => setShowOrderDetails(false)}
                       className="flex-1 border border-gray-300 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-50 active:scale-95 active:shadow-lg transition"

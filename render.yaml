@@ -10,6 +10,12 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: SUPABASE_TABLE
+        value: potmarket_state
       - key: PUBLIC_APP_URL
         value: https://kummarishailesh.github.io/potmarket
       - key: BREVO_API_KEY

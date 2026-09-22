@@ -6,6 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DB_PATH = process.env.DATABASE_PATH || path.join(__dirname, 'db.json');
+const SUPABASE_URL = String(process.env.SUPABASE_URL || '').replace(/\/$/, '');
+const SUPABASE_SERVICE_ROLE_KEY = String(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
+const SUPABASE_TABLE = String(process.env.SUPABASE_TABLE || 'potmarket_state').replace(/[^a-zA-Z0-9_]/g, '');
 
 const defaultDB = {
   themes: {},
@@ -23,6 +26,33 @@ const defaultDB = {
 class Database {
   constructor() {
     this.data = this.loadData();
+    this.remoteWrite = Promise.resolve();
+    this.remoteEnabled = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+  }
+
+  async initialize() {
+    if (!this.remoteEnabled) {
+      if (process.env.NODE_ENV === 'production') console.warn('[database] Remote persistence is not configured; Render Free storage is temporary.');
+      return;
+    }
+    try {
+      const response = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}?id=eq.1&select=data`, {
+        headers: { apikey: SUPABASE_SERVICE_ROLE_KEY, Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}` }
+      });
+      if (!response.ok) throw new Error(`Supabase read failed (${response.status})`);
+      const rows = await response.json();
+      if (rows[0]?.data && typeof rows[0].data === 'object') {
+        this.data = { ...defaultDB, ...rows[0].data };
+        this.saveLocalData();
+        console.log('[database] Loaded persistent state from Supabase.');
+      } else {
+        await this.writeRemote();
+        console.log('[database] Initialized Supabase state from local data.');
+      }
+    } catch (error) {
+      console.error('[database] Supabase initialization failed:', error.message);
+      throw error;
+    }
   }
 
   loadData() {
@@ -55,6 +85,16 @@ class Database {
   }
 
   saveData() {
+    const localSaved = this.saveLocalData();
+    if (this.remoteEnabled) {
+      this.remoteWrite = this.remoteWrite.then(() => this.writeRemote()).catch(error => {
+        console.error('[database] Supabase write failed:', error.message);
+      });
+    }
+    return localSaved;
+  }
+
+  saveLocalData() {
     try {
       fs.mkdirSync(path.dirname(DB_PATH), { recursive: true });
       // Atomic write: write to a temp file then rename to avoid corrupting the DB on partial writes
@@ -86,6 +126,20 @@ class Database {
       }
       return false;
     }
+  }
+
+  async writeRemote() {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/${SUPABASE_TABLE}`, {
+      method: 'POST',
+      headers: {
+        apikey: SUPABASE_SERVICE_ROLE_KEY,
+        Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+        'Content-Type': 'application/json',
+        Prefer: 'resolution=merge-duplicates,return=minimal'
+      },
+      body: JSON.stringify({ id: 1, data: this.data, updated_at: new Date().toISOString() })
+    });
+    if (!response.ok) throw new Error(`Supabase write failed (${response.status})`);
   }
 
   getOrders() {
