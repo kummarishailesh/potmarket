@@ -28,7 +28,7 @@ const razorpayWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || '';
 const withCalculatedDiscount = product => {
     const price = Number(product.price) || 0;
     const originalPrice = Number(product.originalPrice) || price;
-    const discount = originalPrice > 0 ? Math.max(0, ((originalPrice - price) / originalPrice) * 100) : 0;
+    const discount = originalPrice > 0 ? Math.round(Math.max(0, ((originalPrice - price) / originalPrice) * 100)) : 0;
     return { ...product, price, originalPrice, discount };
 };
 const Razorpay = (await import('razorpay')).default;
@@ -495,7 +495,7 @@ app.post('/api/admin/products', requireAdmin, async (req, res) => {
     const price = Number(body.price);
     if (!name || !Number.isFinite(price) || price < 0) return res.status(400).json({ success: false, message: 'Product name and a valid price are required' });
     const originalPrice = Number(body.originalPrice) || price;
-    const discount = originalPrice > 0 ? Math.max(0, ((originalPrice - price) / originalPrice) * 100) : 0;
+    const discount = originalPrice > 0 ? Math.round(Math.max(0, ((originalPrice - price) / originalPrice) * 100)) : 0;
     const product = db.addProduct({ name, price, originalPrice, image: sanitizeText(body.image), category: sanitizeText(body.category) || 'general', discount, inStock: body.inStock !== false, active: body.active !== false, delivery: sanitizeText(body.delivery) || '2 days', prime: body.prime === true, size: sanitizeText(body.size) || 'Medium', rating: Math.min(Math.max(Number(body.rating) || 0, 0), 5), reviews: Math.max(Number(body.reviews) || 0, 0), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     const recipients = [...new Set(db.getUsers().map(user => String(user.email || '').trim().toLowerCase()).filter(Boolean))];
     const delivery = await sendProductAnnouncement(product, recipients);
