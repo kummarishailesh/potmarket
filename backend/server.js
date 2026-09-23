@@ -25,6 +25,12 @@ const publicAppOrigin = String(process.env.PUBLIC_APP_URL || '').replace(/\/$/, 
 const razorpayKeyId = process.env.RAZORPAY_KEY_ID || '';
 const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || '';
 const razorpayWebhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET || '';
+const withCalculatedDiscount = product => {
+    const price = Number(product.price) || 0;
+    const originalPrice = Number(product.originalPrice) || price;
+    const discount = originalPrice > 0 ? Math.max(0, ((originalPrice - price) / originalPrice) * 100) : 0;
+    return { ...product, price, originalPrice, discount };
+};
 const Razorpay = (await import('razorpay')).default;
 const razorpayClient = razorpayKeyId && razorpayKeySecret ? new Razorpay({ key_id: razorpayKeyId, key_secret: razorpayKeySecret }) : null;
 const allowedOrigins = [
@@ -319,7 +325,7 @@ app.post('/api/admin/reset-transaction-data', requireAdmin, (req, res) => {
     return res.status(410).json({ success: false, message: 'Permanent customer, order, payment, and revenue records cannot be deleted' });
 });
 
-app.get('/api/products', (req, res) => res.json({ success: true, products: db.getProducts().filter(product => product.active !== false) }));
+app.get('/api/products', (req, res) => res.json({ success: true, products: db.getProducts().filter(product => product.active !== false).map(withCalculatedDiscount) }));
 app.post('/api/products/bootstrap', (req, res) => {
     const products = Array.isArray(req.body?.products) ? req.body.products.filter(product => product && product.id && product.name) : [];
     if (!products.length) return res.status(400).json({ success: false, message: 'Products are required' });
@@ -482,13 +488,15 @@ app.get('/api/admin/notifications', requireAdmin, (req, res) => {
     });
     return res.json({ success: true, notifications });
 });
-app.get('/api/admin/products', requireAdmin, (req, res) => res.json({ success: true, products: db.getProducts() }));
+app.get('/api/admin/products', requireAdmin, (req, res) => res.json({ success: true, products: db.getProducts().map(withCalculatedDiscount) }));
 app.post('/api/admin/products', requireAdmin, async (req, res) => {
     const body = req.body || {};
     const name = sanitizeText(body.name);
     const price = Number(body.price);
     if (!name || !Number.isFinite(price) || price < 0) return res.status(400).json({ success: false, message: 'Product name and a valid price are required' });
-    const product = db.addProduct({ name, price, originalPrice: Number(body.originalPrice) || price, image: sanitizeText(body.image), category: sanitizeText(body.category) || 'general', discount: Number(body.discount) || 0, inStock: body.inStock !== false, active: body.active !== false, delivery: sanitizeText(body.delivery) || '2 days', prime: body.prime === true, size: sanitizeText(body.size) || 'Medium', rating: Math.min(Math.max(Number(body.rating) || 0, 0), 5), reviews: Math.max(Number(body.reviews) || 0, 0), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
+    const originalPrice = Number(body.originalPrice) || price;
+    const discount = originalPrice > 0 ? Math.max(0, ((originalPrice - price) / originalPrice) * 100) : 0;
+    const product = db.addProduct({ name, price, originalPrice, image: sanitizeText(body.image), category: sanitizeText(body.category) || 'general', discount, inStock: body.inStock !== false, active: body.active !== false, delivery: sanitizeText(body.delivery) || '2 days', prime: body.prime === true, size: sanitizeText(body.size) || 'Medium', rating: Math.min(Math.max(Number(body.rating) || 0, 0), 5), reviews: Math.max(Number(body.reviews) || 0, 0), createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() });
     const recipients = [...new Set(db.getUsers().map(user => String(user.email || '').trim().toLowerCase()).filter(Boolean))];
     const delivery = await sendProductAnnouncement(product, recipients);
     db.addNotification({ id: `notification_${Date.now()}`, type: 'product.created', message: `New product "${product.name}" published and announced to ${delivery.sent} consumer${delivery.sent === 1 ? '' : 's'}`, read: false, createdAt: new Date().toISOString() });
@@ -499,7 +507,10 @@ app.patch('/api/admin/products/:id', requireAdmin, (req, res) => {
     const existing = db.getProductById(Number(req.params.id));
     if (!existing) return res.status(404).json({ success: false, message: 'Product not found' });
     const body = req.body || {};
-    const updates = { ...body, name: sanitizeText(body.name), price: Number(body.price), originalPrice: Number(body.originalPrice), category: sanitizeText(body.category), image: sanitizeText(body.image), delivery: sanitizeText(body.delivery), size: sanitizeText(body.size), rating: Math.min(Math.max(Number(body.rating) || 0, 0), 5), reviews: Math.max(Number(body.reviews) || 0, 0), updatedAt: new Date().toISOString() };
+    const price = Number(body.price);
+    const originalPrice = Number(body.originalPrice) || price;
+    const discount = originalPrice > 0 ? Math.max(0, ((originalPrice - price) / originalPrice) * 100) : 0;
+    const updates = { ...body, name: sanitizeText(body.name), price, originalPrice, discount, category: sanitizeText(body.category), image: sanitizeText(body.image), delivery: sanitizeText(body.delivery), size: sanitizeText(body.size), rating: Math.min(Math.max(Number(body.rating) || 0, 0), 5), reviews: Math.max(Number(body.reviews) || 0, 0), updatedAt: new Date().toISOString() };
     if (!updates.name || !Number.isFinite(updates.price) || updates.price < 0) return res.status(400).json({ success: false, message: 'Product name and a valid price are required' });
     const product = db.updateProduct(existing.id, updates);
     db.addAuditLog({ id: `audit_${Date.now()}`, action: 'product.updated', adminId: req.admin.id, productId: product.id, createdAt: new Date().toISOString() });
