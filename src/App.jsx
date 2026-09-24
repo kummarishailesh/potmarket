@@ -3688,20 +3688,20 @@ const PotMarket = () => {
               </div>
             </div>
           ) : (
-          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-1.5 sm:gap-5">
+          <div className="product-grid grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-0">
             {filteredProducts.map(product => (
               <div
                 key={product.id}
-                className={`${theme.cardBg} dark:bg-[#0b1220] rounded-lg shadow hover:shadow-xl transition cursor-pointer overflow-hidden border`}
+                className={`product-card ${theme.cardBg} dark:bg-[#0b1220] shadow hover:shadow-xl transition cursor-pointer overflow-hidden border`}
               >
                 <div 
-                  className="relative bg-gray-50 aspect-square lg:aspect-[4/3] flex items-center justify-center"
+                  className="product-card-image relative bg-gray-50 aspect-square lg:aspect-[4/3] flex items-center justify-center"
                   onClick={() => setSelectedProduct(product)}
                 >
                   <img 
                     src={product.image} 
                     alt={product.name}
-                    className="w-full h-full object-contain"
+                    className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.style.display = 'none';
                       e.target.nextSibling.style.display = 'flex';
@@ -3826,13 +3826,7 @@ const PotMarket = () => {
               <h4 className="text-lg font-semibold mb-4">Contact Info</h4>
               <div className="space-y-2 text-gray-400">
                 <p>📧 kummarishailesh@gmail.com</p>
-                <p>📞 +91 9866852823</p>
                 <p>📍 India</p>
-                <div className="mt-2">
-                  { (typeof SHOW_TEST_API_BUTTON !== 'undefined' ? SHOW_TEST_API_BUTTON : false) && (
-                    <button onClick={testApiOrder} className="px-3 py-1 bg-green-600 text-white rounded">Test API Order</button>
-                  ) }
-                </div>
               </div>
             </div>
           </div>

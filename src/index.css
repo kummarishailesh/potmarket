@@ -85,6 +85,9 @@ html { overflow-x: clip; }
 .storefront-product-surface { position:relative; isolation:isolate; min-height:70vh; background-color:#f7fcf9; background-position:center; background-size:cover; background-attachment:fixed; }
 .storefront-product-surface > * { position:relative; z-index:1; }
 html.dark .storefront-product-surface { background-color:#050c0f; }
+.product-grid { gap:8px !important; }
+.product-card { border-width:0; border-radius:0; }
+.product-card-image { padding:0; }
 .entry-logo { position:relative; width:56px; height:56px; display:block; object-fit:contain; border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.18); }
 .entry-pot-shape { position:absolute; left:16px; bottom:10px; width:25px; height:19px; border-radius:3px 3px 8px 8px; background:#9a542d; transform:perspective(20px) rotateX(-4deg); }
 .entry-pot-shape::before { content:''; position:absolute; left:-3px; top:-4px; width:31px; height:6px; border-radius:5px; background:#6e3924; }
@@ -153,19 +156,21 @@ html.dark .bg-white.border-b {
 .categories-row {
   -webkit-overflow-scrolling: touch;
   overflow-y: hidden;
-  column-gap: 1.25rem;
+  column-gap: 2cm !important;
+  padding-inline: 0.25rem;
   scrollbar-width: thin;
 }
 
 .category-btn {
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   /* wider horizontally: increase left/right padding and ensure a minimum width */
   padding: 0.6rem 1.25rem;
-  min-width: 112px;
+  min-width: 128px;
   border-radius: 10px;
-  background: rgba(255,255,255,0.03); /* subtle dark button */
+  background: rgba(4,35,27,0.72);
   color: #e6eef6; /* light text */
   border: 1px solid rgba(255,255,255,0.08);
   font-weight: 700; /* slightly bolder to match screenshot */
@@ -196,8 +201,8 @@ html.dark .bg-white.border-b {
 @media (max-width: 640px) {
   .consumer-entry > section { min-height:100vh; }
   .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 24px); height:auto; min-height:calc(100vh - 24px); margin:12px; padding:32px 24px; border-radius:22px; }
-  .categories-row { column-gap: 1rem; }
-  .category-btn { padding: 0.55rem 1rem; min-width: 88px; font-size: 0.85rem; letter-spacing: 0; font-weight: 700; }
+  .categories-row { column-gap: 2cm !important; }
+  .category-btn { padding: 0.55rem 1rem; min-width: 104px; font-size: 0.85rem; letter-spacing: 0; font-weight: 700; }
   .categories-row { scrollbar-width: none; }
   .categories-row::-webkit-scrollbar { display: none; }
 }
