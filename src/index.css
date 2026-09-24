@@ -68,6 +68,9 @@ html { overflow-x: clip; }
 .entry-login-form > button[type='button'] { color:#158342; }
 .entry-login-form p { color:#13203b; }
 .entry-login-form p button { color:#158342; font-weight:700; }
+@media (max-width: 900px) {
+  .consumer-entry > section > div:last-child { width:calc(100% - 32px); min-height:auto; margin:16px auto; padding:42px clamp(24px, 7vw, 64px); border-radius:24px; }
+}
 .storefront-product-surface { position:relative; isolation:isolate; min-height:70vh; background:linear-gradient(rgba(247,252,249,.58),rgba(247,252,249,.66)),url('/potmarket/topbar-wallpaper.png') center/cover fixed; }
 .storefront-product-surface > * { position:relative; z-index:1; }
 html.dark .storefront-product-surface { background:linear-gradient(rgba(5,12,15,.68),rgba(5,12,15,.74)),url('/potmarket/topbar-wallpaper.png') center/cover fixed; }
