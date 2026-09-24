@@ -3273,9 +3273,7 @@ const PotMarket = () => {
           {/* Header */}
           {currentView !== 'profile' && (<header
             style={{
-              backgroundImage: darkMode
-                ? `linear-gradient(90deg, rgba(15,23,42,.9), rgba(17,24,39,.78)), url('${NAVBAR_BACKGROUND}')`
-                : `linear-gradient(90deg, rgba(5,117,65,.9), rgba(16,185,129,.72)), url('${NAVBAR_BACKGROUND}')`,
+              backgroundImage: `url('${NAVBAR_BACKGROUND}')`,
               backgroundPosition: 'center 46%',
               backgroundSize: 'cover'
             }}
