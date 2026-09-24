@@ -419,7 +419,7 @@ const LoginForm = ({ onLogin, onForgotPassword, onSwitchToRegister }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="entry-login-form space-y-4">
       <div>
         <label className="block text-sm font-medium mb-1">Email</label>
         <input
@@ -522,9 +522,13 @@ const ENTRY_POT_IMAGES = [
   'https://chatgpt.com/backend-api/estuary/content?id=file_00000000c714822fb54d71e82786e9b9&ts=497296&p=fs&cid=1&sig=88cd2d82831a955ed39b59db161da2d940f79aa42088824cca1c7e86d5d410f5&v=0',
 ];
 
+const NAVBAR_BACKGROUND = `${import.meta.env.BASE_URL}navbar-background.png`;
+const LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background.png`;
+const POTMARKET_LOGO = `${import.meta.env.BASE_URL}potmarket-logo.png`;
+
 const ConsumerEntryPage = ({ onLogin, onRequestOtp, onRegister, onRequestPasswordOtp, onResetPassword }) => {
   const [registering, setRegistering] = useState(false); const [forgotPassword, setForgotPassword] = useState(false);
-  return <main className="consumer-entry min-h-screen bg-slate-950 flex items-center justify-center p-6"><div className="entry-pot-wall" aria-hidden="true" /><section className="relative z-10 w-full max-w-5xl grid md:grid-cols-2 overflow-hidden rounded-3xl bg-white shadow-2xl"><div className="hidden md:flex flex-col justify-between bg-emerald-950/80 text-white p-12"><div><div className="entry-logo"><span className="entry-pot-shape" /><Sprout size={27} strokeWidth={2.5} /></div><p className="mt-8 text-sm uppercase tracking-[0.25em] text-emerald-200">PotMarket</p><h1 className="mt-3 text-4xl font-bold leading-tight">Thoughtful pots for meaningful spaces.</h1><p className="mt-5 text-emerald-100 leading-7">Sign in to keep your orders, wishlist, and delivery updates together.</p></div><p className="text-sm text-emerald-200">A calmer way to shop handcrafted planters.</p></div><div className="p-8 sm:p-12"><div className="md:hidden flex items-center gap-3 mb-8"><div className="entry-logo entry-logo-small"><span className="entry-pot-shape" /><Sprout size={21} /></div><strong className="text-xl text-emerald-900">PotMarket</strong></div><p className="text-xs uppercase tracking-[0.22em] text-emerald-700">Welcome back</p><h2 className="mt-2 text-3xl font-bold text-slate-900">{forgotPassword ? 'Recover your account' : registering ? 'Create your account' : 'Sign in to PotMarket'}</h2><p className="mt-2 mb-7 text-sm text-slate-500">{forgotPassword ? 'Reset your password securely by email.' : registering ? 'Save your details and follow every order.' : 'Your products and orders are waiting for you.'}</p>{forgotPassword ? <ForgotPasswordForm onRequestOtp={onRequestPasswordOtp} onReset={onResetPassword} onBackToLogin={() => setForgotPassword(false)} /> : registering ? <RegisterForm onRequestOtp={onRequestOtp} onRegister={onRegister} onSwitchToLogin={() => setRegistering(false)} /> : <LoginForm onLogin={onLogin} onForgotPassword={() => setForgotPassword(true)} onSwitchToRegister={() => setRegistering(true)} />}</div></section></main>;
+  return <main className="consumer-entry min-h-screen bg-slate-950 flex items-center justify-center p-6"><div className="entry-pot-wall" style={{ backgroundImage: `url(${LOGIN_BACKGROUND})` }} aria-hidden="true" /><section className="relative z-10 w-full max-w-5xl grid md:grid-cols-2 overflow-hidden rounded-3xl bg-white shadow-2xl"><div className="hidden md:flex flex-col justify-between bg-emerald-950/80 text-white p-12"><div><img className="entry-logo" src={POTMARKET_LOGO} alt="PotMarket" /><p className="mt-8 text-sm uppercase tracking-[0.25em] text-emerald-200">PotMarket</p><h1 className="mt-3 text-4xl font-bold leading-tight">Thoughtful pots for meaningful spaces.</h1><p className="mt-5 text-emerald-100 leading-7">Sign in to keep your orders, wishlist, and delivery updates together.</p></div><p className="text-sm text-emerald-200">A calmer way to shop handcrafted planters.</p></div><div className="p-8 sm:p-12"><div className="md:hidden flex items-center gap-3 mb-8"><img className="entry-logo entry-logo-small" src={POTMARKET_LOGO} alt="PotMarket" /><strong className="text-xl text-emerald-900">PotMarket</strong></div><p className="text-xs uppercase tracking-[0.22em] text-emerald-700">Welcome back</p><h2 className="mt-2 text-3xl font-bold text-slate-900">{forgotPassword ? 'Recover your account' : registering ? 'Create your account' : 'Sign in to PotMarket'}</h2><p className="mt-2 mb-7 text-sm text-slate-500">{forgotPassword ? 'Reset your password securely by email.' : registering ? 'Save your details and follow every order.' : 'Your products and orders are waiting for you.'}</p>{forgotPassword ? <ForgotPasswordForm onRequestOtp={onRequestPasswordOtp} onReset={onResetPassword} onBackToLogin={() => setForgotPassword(false)} /> : registering ? <RegisterForm onRequestOtp={onRequestOtp} onRegister={onRegister} onSwitchToLogin={() => setRegistering(false)} /> : <LoginForm onLogin={onLogin} onForgotPassword={() => setForgotPassword(true)} onSwitchToRegister={() => setRegistering(true)} />}</div></section></main>;
 };
 
 const RegisterForm = ({ onRequestOtp, onRegister, onSwitchToLogin }) => {
@@ -3263,8 +3267,8 @@ const PotMarket = () => {
           <header
             style={{
               backgroundImage: darkMode
-                ? "linear-gradient(90deg, rgba(15,23,42,.9), rgba(17,24,39,.78)), url('/potmarket/topbar-wallpaper.png')"
-                : "linear-gradient(90deg, rgba(5,117,65,.9), rgba(16,185,129,.72)), url('/potmarket/topbar-wallpaper.png')",
+                ? `linear-gradient(90deg, rgba(15,23,42,.9), rgba(17,24,39,.78)), url('${NAVBAR_BACKGROUND}')`
+                : `linear-gradient(90deg, rgba(5,117,65,.9), rgba(16,185,129,.72)), url('${NAVBAR_BACKGROUND}')`,
               backgroundPosition: 'center 46%',
               backgroundSize: 'cover'
             }}
