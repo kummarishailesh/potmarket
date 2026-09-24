@@ -1,6 +1,6 @@
  //app.js
 import React, { useState, useEffect, useMemo, useRef } from 'react';
-import { ShoppingCart, Search, Heart, Star, Menu, Filter, Truck, Shield, RotateCcw, X, Package, Sprout, FileText, Image, File, MessageSquare, ShoppingBag, Layout, Palette, Puzzle, Settings, Check, Sun, Moon, MapPin, LogOut } from 'lucide-react';
+import { ShoppingCart, Search, Heart, Star, Menu, Filter, Truck, Shield, RotateCcw, X, Package, Sprout, FileText, Image, File, MessageSquare, ShoppingBag, Layout, Palette, Puzzle, Settings, Check, Sun, Moon, MapPin, LogOut, ChevronRight, UserRound } from 'lucide-react';
 
 // Animated Bubble Background Component
 const BubbleBackground = ({ theme }) => {
@@ -3204,6 +3204,22 @@ const PotMarket = () => {
   const adminViews = ['posts', 'pages', 'comments', 'media', 'woocommerce', 'templates', 'appearance', 'plugins', 'settings'];
   const isAdminView = adminViews.includes(currentView);
 
+  const ProfileView = () => {
+    const displayName = user?.name || 'My Account';
+    const initials = displayName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
+    const addressLabel = shippingAddress.address ? `${shippingAddress.address}, ${shippingAddress.city}` : 'Add your delivery address';
+    const profileRow = (label, action, detail) => <button type="button" className="profile-row" onClick={action}><span><strong>{label}</strong>{detail && <small>{detail}</small>}</span><ChevronRight size={23} strokeWidth={2.5} /></button>;
+    return <section className="profile-page">
+      <div className="profile-page-heading"><p>My Account</p><span className="profile-status-dot" /></div>
+      <div className="profile-identity"><div className="profile-avatar">{initials || <UserRound size={34} />}</div><div className="profile-identity-copy"><h2>{displayName}</h2><p>{user?.email || 'Email not added'}</p><p>{user?.phone || shippingAddress.phone || 'Phone not added'}</p></div><button type="button" className="profile-edit" onClick={() => setShowCheckout(true)}>Edit</button></div>
+      <div className="profile-group">{profileRow('Orders and Refunds', () => { setCurrentView('orders'); setShowOrders(true); setShowDashboard(false); })}{profileRow('Customer Care', () => alert('Customer care is available through support.'))}{profileRow('Invite Friends & Earn', () => alert('Invite sharing will be available soon.'), 'Earn rewards when friends shop with you')}{profileRow('PotMarket Rewards', () => alert('Rewards will be available soon.'))}</div>
+      <div className="profile-group">{profileRow('Address', () => setShowCheckout(true), addressLabel)}{profileRow('Notifications', () => alert('Notifications are currently enabled for order updates.'))}</div>
+      <div className="profile-group">{profileRow('How To Return', () => alert('Returns are accepted for eligible products within 7 days.'))}{profileRow('How Do I Redeem My Coupon?', () => alert('Apply available coupons during checkout.'))}{profileRow('Terms & Conditions', () => alert('Terms and conditions'))}{profileRow('Promotions Terms & Conditions', () => alert('Promotions terms and conditions'))}{profileRow('Returns & Refunds Policy', () => alert('Returns and refunds policy'))}{profileRow('We Respect Your Privacy', () => alert('Your privacy matters to us.'))}{profileRow('Fees & Payments', () => alert('Fees and payments information'))}{profileRow('Delivery and Shipping Policy', () => alert('Delivery and shipping policy'))}{profileRow('Who We Are', () => alert('About PotMarket'))}{profileRow('Join Our Team', () => alert('Careers at PotMarket'))}</div>
+      <div className="profile-footer"><button type="button" onClick={logout}>Logout</button><small>PotMarket · Your trusted pot store</small></div>
+      <nav className="profile-bottom-nav" aria-label="Account navigation"><button type="button" onClick={() => setCurrentView('home')}><ShoppingBag size={24} /><span>Home</span></button><button type="button" onClick={() => setCurrentView('home')}><Package size={24} /><span>Orders</span></button><button type="button" onClick={() => setCurrentView('wishlist')}><Heart size={24} /><span>Wishlist</span></button><button type="button" onClick={() => setCurrentView('cart')}><ShoppingCart size={24} /><span>Cart</span></button><button type="button" className="active"><UserRound size={24} /><span>Account</span></button></nav>
+    </section>;
+  };
+
   if (showEntryLogin && !isLoggedIn && !isAdminView) return <ConsumerEntryPage onLogin={login} onRequestOtp={requestRegistrationOtp} onRegister={register} onRequestPasswordOtp={requestPasswordOtp} onResetPassword={resetPassword} />;
 
   return (
@@ -3520,6 +3536,7 @@ const PotMarket = () => {
 
         {/* Product Grid */}
         <main className="flex-1 min-w-0">
+          {currentView === 'profile' ? <ProfileView /> : <>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <p className="text-gray-600 min-w-0">
               Showing {filteredProducts.length} results
@@ -3745,7 +3762,7 @@ const PotMarket = () => {
               </div>
             ))}
           </div>
-          )}
+          )}</>}
         </main>
       </div>
 
