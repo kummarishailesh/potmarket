@@ -3259,7 +3259,7 @@ const PotMarket = () => {
           <AdminView />
         ) : (
           <>
-            <div className="hidden md:block"><Dashboard /></div>
+            <div className="hidden lg:block"><Dashboard /></div>
             {currentView !== 'profile' && <MobileBottomNav />}
 
           {/* Header */}
@@ -3267,7 +3267,7 @@ const PotMarket = () => {
             <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
               <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                  <div className="hidden md:block cursor-pointer" onClick={() => setShowDashboard(!showDashboard)} title="Menu">
+                  <div className="hidden lg:block cursor-pointer" onClick={() => setShowDashboard(!showDashboard)} title="Menu">
                     <Menu className="w-6 h-6" />
                   </div>
                   <h1 className="text-lg sm:text-2xl font-bold inline-flex items-center whitespace-nowrap">{theme.icon} {BUSINESS_CONFIG.BUSINESS_NAME}</h1>
@@ -3296,7 +3296,7 @@ const PotMarket = () => {
                   )}
                   <div className="flex items-center gap-3 sm:gap-5 ml-0 sm:ml-2">
                     <div
-                      className="hidden md:block relative cursor-pointer hover:scale-110 transition p-1"
+                      className="hidden lg:block relative cursor-pointer hover:scale-110 transition p-1"
                       onClick={() => setShowWishlist(!showWishlist)}
                       title="Wishlist"
                     >
@@ -3304,7 +3304,7 @@ const PotMarket = () => {
                       {wishlist.length > 0 && <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{wishlist.length}</span>}
                     </div>
                     <div
-                      className="hidden md:block relative cursor-pointer hover:scale-110 transition p-1"
+                      className="hidden lg:block relative cursor-pointer hover:scale-110 transition p-1"
                       onClick={() => setShowOrders(!showOrders)}
                       title="Orders"
                     >
@@ -3312,7 +3312,7 @@ const PotMarket = () => {
                       {orders.filter(o => o.status !== 'Cancelled').length > 0 && <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{orders.filter(o => o.status !== 'Cancelled').length}</span>}
                     </div>
                     <div
-                      className="hidden md:block relative cursor-pointer hover:scale-110 transition p-1"
+                      className="hidden lg:block relative cursor-pointer hover:scale-110 transition p-1"
                       onClick={() => setShowCart(!showCart)}
                       title="Cart"
                     >
