@@ -55,7 +55,7 @@ html { overflow-x: clip; }
 }
 
 .consumer-entry { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; padding: 0; }
-.entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png'); background-position:center; background-size:cover; background-repeat:no-repeat; }
+.entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png'); background-position:left center; background-size:cover; background-repeat:no-repeat; }
 .entry-pot-wall::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,44,34,.28), rgba(2,25,41,.38)); }
 .consumer-entry > section { display:block; width:min(100%, 1810px); min-height:100vh; max-width:none; margin:0 auto; border-radius:0; background:transparent; box-shadow:none; }
 .consumer-entry > section > div:first-child { display:none; }
