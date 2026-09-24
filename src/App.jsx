@@ -519,10 +519,7 @@ const ForgotPasswordForm = ({ onRequestOtp, onReset, onBackToLogin }) => {
 };
 
 const ENTRY_POT_IMAGES = [
-  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/2446b85d-848f-42f9-8d6c-bebd705da30a.png',
-  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png',
-  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/d9661d7a-f9f4-4403-9b8c-166c2a286433.png',
-  'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/94c93ba0-2de1-4943-a137-5cfc2c23040c.png'
+  'https://chatgpt.com/backend-api/estuary/content?id=file_00000000c714822fb54d71e82786e9b9&ts=497296&p=fs&cid=1&sig=88cd2d82831a955ed39b59db161da2d940f79aa42088824cca1c7e86d5d410f5&v=0',
 ];
 
 const ConsumerEntryPage = ({ onLogin, onRequestOtp, onRegister, onRequestPasswordOtp, onResetPassword }) => {
@@ -3263,7 +3260,16 @@ const PotMarket = () => {
             {currentView !== 'profile' && <MobileBottomNav />}
 
           {/* Header */}
-          <header style={darkMode ? { background: 'linear-gradient(90deg,#0f172a,#111827)' } : undefined} className={`custom-dark bg-gradient-to-r ${theme.headerBg} text-white sticky top-0 z-50 shadow-lg`}>
+          <header
+            style={{
+              backgroundImage: darkMode
+                ? "linear-gradient(90deg, rgba(15,23,42,.9), rgba(17,24,39,.78)), url('/potmarket/topbar-wallpaper.png')"
+                : "linear-gradient(90deg, rgba(5,117,65,.9), rgba(16,185,129,.72)), url('/potmarket/topbar-wallpaper.png')",
+              backgroundPosition: 'center 46%',
+              backgroundSize: 'cover'
+            }}
+            className={`custom-dark text-white sticky top-0 z-50 shadow-lg`}
+          >
             <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
               <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
