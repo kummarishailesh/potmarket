@@ -857,6 +857,7 @@ const PotMarket = () => {
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [currentView, setCurrentView] = useState('home');
   const [profileNotice, setProfileNotice] = useState('');
+  const [profileEditing, setProfileEditing] = useState(false);
 
   // Admin states
   const [posts, setPosts] = useState([]);
@@ -3213,12 +3214,25 @@ const PotMarket = () => {
     const addressLabel = shippingAddress.address ? `${shippingAddress.address}, ${shippingAddress.city}` : 'Add your delivery address';
     const profileRow = (label, action, detail) => <button type="button" className="profile-row" onClick={action}><span><strong>{label}</strong>{detail && <small>{detail}</small>}</span><ChevronRight size={23} strokeWidth={2.5} /></button>;
     const showNotice = message => setProfileNotice(message);
+    const updateAddress = (key, value) => setShippingAddress(current => ({ ...current, [key]: value }));
+    const saveProfile = () => {
+      if (!shippingAddress.name || !shippingAddress.phone || !shippingAddress.address || !shippingAddress.city || !shippingAddress.state || !shippingAddress.pincode) {
+        showNotice('Please complete every profile field before saving.');
+        return;
+      }
+      const updatedUser = { ...user, name: shippingAddress.name, phone: shippingAddress.phone, shippingAddress };
+      setUser(updatedUser);
+      localStorage.setItem('user-session', JSON.stringify(updatedUser));
+      setProfileEditing(false);
+      showNotice('Profile updated successfully.');
+    };
     return <section className="profile-page">
       <div className="profile-page-heading"><p>My Account</p><span className="profile-status-dot" /></div>
-      <div className="profile-identity"><div className="profile-avatar">{initials || <UserRound size={34} />}</div><div className="profile-identity-copy"><h2>{displayName}</h2><p>{user?.email || 'Email not added'}</p><p>{user?.phone || shippingAddress.phone || 'Phone not added'}</p></div><button type="button" className="profile-edit" onClick={() => setShowCheckout(true)}>Edit</button></div>
+      <div className="profile-identity"><div className="profile-avatar">{initials || <UserRound size={34} />}</div><div className="profile-identity-copy"><h2>{displayName}</h2><p>{user?.email || 'Email not added'}</p><p>{user?.phone || shippingAddress.phone || 'Phone not added'}</p></div><button type="button" className="profile-edit" onClick={() => setProfileEditing(current => !current)}>{profileEditing ? 'Close' : 'Edit'}</button></div>
+      {profileEditing && <div className="profile-editor"><label>Name<input value={shippingAddress.name} onChange={event => updateAddress('name', event.target.value)} /></label><label>Phone<input value={shippingAddress.phone} onChange={event => updateAddress('phone', event.target.value)} /></label><label>Address<textarea rows="2" value={shippingAddress.address} onChange={event => updateAddress('address', event.target.value)} /></label><div className="profile-editor-grid"><label>City<input value={shippingAddress.city} onChange={event => updateAddress('city', event.target.value)} /></label><label>State<input value={shippingAddress.state} onChange={event => updateAddress('state', event.target.value)} /></label><label>Pincode<input value={shippingAddress.pincode} onChange={event => updateAddress('pincode', event.target.value)} /></label></div><button type="button" onClick={saveProfile}>Save changes</button></div>}
       {profileNotice && <div className="profile-notice" role="status">{profileNotice}<button type="button" onClick={() => setProfileNotice('')} aria-label="Close message"><X size={17} /></button></div>}
       <div className="profile-group">{profileRow('Orders and Refunds', () => { setCurrentView('orders'); setShowOrders(true); })}{profileRow('Wishlist', () => { setCurrentView('wishlist'); setShowWishlist(true); }, `${wishlist.length} saved item${wishlist.length === 1 ? '' : 's'}`)}{profileRow('Customer Care', () => showNotice('Customer care: email support@potmarket.example for help with an order.'))}{profileRow('Invite Friends & Earn', () => showNotice('Invite sharing will be available soon.'), 'Earn rewards when friends shop with you')}{profileRow('PotMarket Rewards', () => showNotice('Rewards will appear here after your first completed order.'))}</div>
-      <div className="profile-group">{profileRow('Address', () => setShowCheckout(true), addressLabel)}{profileRow('Notifications', () => showNotice('Order and delivery notifications are enabled for this account.'))}</div>
+      <div className="profile-group">{profileRow('Notifications', () => showNotice('Order and delivery notifications are enabled for this account.'))}</div>
       <div className="profile-group">{profileRow('How To Return', () => showNotice('Eligible products can be returned within 7 days of delivery.'))}{profileRow('How Do I Redeem My Coupon?', () => showNotice('Coupons can be applied during checkout before payment.'))}{profileRow('Terms & Conditions', () => showNotice('Terms and conditions are available for every PotMarket order.'))}{profileRow('Promotions Terms & Conditions', () => showNotice('Promotion eligibility and limits are shown with each offer.'))}{profileRow('Returns & Refunds Policy', () => showNotice('Refunds are issued after the returned item is inspected.'))}{profileRow('We Respect Your Privacy', () => showNotice('Your account data is used only to provide PotMarket services.'))}{profileRow('Fees & Payments', () => showNotice('The checkout total includes the product and delivery charges shown before payment.'))}{profileRow('Delivery and Shipping Policy', () => showNotice('Delivery timing is shown on each product and at checkout.'))}{profileRow('Who We Are', () => showNotice('PotMarket helps you find distinctive pots and planters for your space.'))}{profileRow('Join Our Team', () => showNotice('Please contact support for current PotMarket opportunities.'))}</div>
       <div className="profile-footer"><button type="button" onClick={logout}>Logout</button><small>PotMarket · Your trusted pot store</small></div>
       <nav className="profile-bottom-nav" aria-label="Account navigation"><button type="button" onClick={() => setCurrentView('home')}><ShoppingBag size={24} /><span>Home</span></button><button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); }}><Package size={24} /><span>Orders</span></button><button type="button" onClick={() => { setCurrentView('wishlist'); setShowWishlist(true); }}><Heart size={24} /><span>Wishlist</span></button><button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={24} /><span>Cart</span></button><button type="button" className="active"><UserRound size={24} /><span>Account</span></button></nav>
