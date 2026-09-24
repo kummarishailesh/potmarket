@@ -856,6 +856,7 @@ const PotMarket = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const [showOrderConfirmation, setShowOrderConfirmation] = useState(false);
   const [currentView, setCurrentView] = useState('home');
+  const [profileNotice, setProfileNotice] = useState('');
 
   // Admin states
   const [posts, setPosts] = useState([]);
@@ -3211,21 +3212,23 @@ const PotMarket = () => {
     const initials = displayName.split(/\s+/).map(part => part[0]).join('').slice(0, 2).toUpperCase();
     const addressLabel = shippingAddress.address ? `${shippingAddress.address}, ${shippingAddress.city}` : 'Add your delivery address';
     const profileRow = (label, action, detail) => <button type="button" className="profile-row" onClick={action}><span><strong>{label}</strong>{detail && <small>{detail}</small>}</span><ChevronRight size={23} strokeWidth={2.5} /></button>;
+    const showNotice = message => setProfileNotice(message);
     return <section className="profile-page">
       <div className="profile-page-heading"><p>My Account</p><span className="profile-status-dot" /></div>
       <div className="profile-identity"><div className="profile-avatar">{initials || <UserRound size={34} />}</div><div className="profile-identity-copy"><h2>{displayName}</h2><p>{user?.email || 'Email not added'}</p><p>{user?.phone || shippingAddress.phone || 'Phone not added'}</p></div><button type="button" className="profile-edit" onClick={() => setShowCheckout(true)}>Edit</button></div>
-      <div className="profile-group">{profileRow('Orders and Refunds', () => { setCurrentView('orders'); setShowOrders(true); setShowDashboard(false); })}{profileRow('Customer Care', () => alert('Customer care is available through support.'))}{profileRow('Invite Friends & Earn', () => alert('Invite sharing will be available soon.'), 'Earn rewards when friends shop with you')}{profileRow('PotMarket Rewards', () => alert('Rewards will be available soon.'))}</div>
-      <div className="profile-group">{profileRow('Address', () => setShowCheckout(true), addressLabel)}{profileRow('Notifications', () => alert('Notifications are currently enabled for order updates.'))}</div>
-      <div className="profile-group">{profileRow('How To Return', () => alert('Returns are accepted for eligible products within 7 days.'))}{profileRow('How Do I Redeem My Coupon?', () => alert('Apply available coupons during checkout.'))}{profileRow('Terms & Conditions', () => alert('Terms and conditions'))}{profileRow('Promotions Terms & Conditions', () => alert('Promotions terms and conditions'))}{profileRow('Returns & Refunds Policy', () => alert('Returns and refunds policy'))}{profileRow('We Respect Your Privacy', () => alert('Your privacy matters to us.'))}{profileRow('Fees & Payments', () => alert('Fees and payments information'))}{profileRow('Delivery and Shipping Policy', () => alert('Delivery and shipping policy'))}{profileRow('Who We Are', () => alert('About PotMarket'))}{profileRow('Join Our Team', () => alert('Careers at PotMarket'))}</div>
+      {profileNotice && <div className="profile-notice" role="status">{profileNotice}<button type="button" onClick={() => setProfileNotice('')} aria-label="Close message"><X size={17} /></button></div>}
+      <div className="profile-group">{profileRow('Orders and Refunds', () => { setCurrentView('orders'); setShowOrders(true); })}{profileRow('Customer Care', () => showNotice('Customer care: email support@potmarket.example for help with an order.'))}{profileRow('Invite Friends & Earn', () => showNotice('Invite sharing will be available soon.'), 'Earn rewards when friends shop with you')}{profileRow('PotMarket Rewards', () => showNotice('Rewards will appear here after your first completed order.'))}</div>
+      <div className="profile-group">{profileRow('Address', () => setShowCheckout(true), addressLabel)}{profileRow('Notifications', () => showNotice('Order and delivery notifications are enabled for this account.'))}</div>
+      <div className="profile-group">{profileRow('How To Return', () => showNotice('Eligible products can be returned within 7 days of delivery.'))}{profileRow('How Do I Redeem My Coupon?', () => showNotice('Coupons can be applied during checkout before payment.'))}{profileRow('Terms & Conditions', () => showNotice('Terms and conditions are available for every PotMarket order.'))}{profileRow('Promotions Terms & Conditions', () => showNotice('Promotion eligibility and limits are shown with each offer.'))}{profileRow('Returns & Refunds Policy', () => showNotice('Refunds are issued after the returned item is inspected.'))}{profileRow('We Respect Your Privacy', () => showNotice('Your account data is used only to provide PotMarket services.'))}{profileRow('Fees & Payments', () => showNotice('The checkout total includes the product and delivery charges shown before payment.'))}{profileRow('Delivery and Shipping Policy', () => showNotice('Delivery timing is shown on each product and at checkout.'))}{profileRow('Who We Are', () => showNotice('PotMarket helps you find distinctive pots and planters for your space.'))}{profileRow('Join Our Team', () => showNotice('Please contact support for current PotMarket opportunities.'))}</div>
       <div className="profile-footer"><button type="button" onClick={logout}>Logout</button><small>PotMarket · Your trusted pot store</small></div>
-      <nav className="profile-bottom-nav" aria-label="Account navigation"><button type="button" onClick={() => setCurrentView('home')}><ShoppingBag size={24} /><span>Home</span></button><button type="button" onClick={() => setCurrentView('home')}><Package size={24} /><span>Orders</span></button><button type="button" onClick={() => setCurrentView('wishlist')}><Heart size={24} /><span>Wishlist</span></button><button type="button" onClick={() => setCurrentView('cart')}><ShoppingCart size={24} /><span>Cart</span></button><button type="button" className="active"><UserRound size={24} /><span>Account</span></button></nav>
+      <nav className="profile-bottom-nav" aria-label="Account navigation"><button type="button" onClick={() => setCurrentView('home')}><ShoppingBag size={24} /><span>Home</span></button><button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); }}><Package size={24} /><span>Orders</span></button><button type="button" onClick={() => { setCurrentView('wishlist'); setShowWishlist(true); }}><Heart size={24} /><span>Wishlist</span></button><button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={24} /><span>Cart</span></button><button type="button" className="active"><UserRound size={24} /><span>Account</span></button></nav>
     </section>;
   };
 
   const MobileBottomNav = () => <nav className="mobile-bottom-nav" aria-label="Store navigation">
     <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { setCurrentView('home'); setShowOrders(false); setShowWishlist(false); setShowCart(false); setShowDashboard(false); }}><ShoppingBag size={22} /><span>Home</span></button>
     <button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); setShowDashboard(false); }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
-    <button type="button" onClick={() => setShowDashboard(true)}><Menu size={22} /><span>Categories</span></button>
+    <button type="button" onClick={() => { setCurrentView('home'); setShowFilters(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Filter size={22} /><span>Categories</span></button>
     <button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); setShowDashboard(false); }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
     <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { setCurrentView('profile'); setShowOrders(false); setShowWishlist(false); setShowCart(false); setShowDashboard(false); }}><UserRound size={22} /><span>Account</span></button>
   </nav>;
@@ -3242,26 +3245,13 @@ const PotMarket = () => {
           <AdminView />
         ) : (
           <>
-            {/* Dashboard */}
-            <Dashboard />
             {currentView !== 'profile' && <MobileBottomNav />}
-
-          {/* Dashboard Overlay for Mobile */}
-          {showDashboard && (
-            <div
-              className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
-              onClick={() => setShowDashboard(false)}
-            />
-          )}
 
           {/* Header */}
           <header style={darkMode ? { background: 'linear-gradient(90deg,#0f172a,#111827)' } : undefined} className={`custom-dark bg-gradient-to-r ${theme.headerBg} text-white sticky top-0 z-50 shadow-lg`}>
             <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 py-2 sm:py-3">
               <div className="flex items-center justify-between gap-2 sm:gap-4 min-w-0">
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                  <div className="cursor-pointer" onClick={() => setShowDashboard(!showDashboard)} title="Menu">
-                    <Menu className="w-6 h-6" />
-                  </div>
                   <h1 className="text-lg sm:text-2xl font-bold inline-flex items-center whitespace-nowrap">{theme.icon} {BUSINESS_CONFIG.BUSINESS_NAME}</h1>
                 </div>
 
@@ -3299,31 +3289,6 @@ const PotMarket = () => {
                         </span>
                       )}
                     </div>
-                    <div
-                      className="relative cursor-pointer hover:scale-110 transition p-1"
-                      onClick={() => setShowOrders(!showOrders)}
-                      title="Orders"
-                    >
-                      <Package className="w-6 h-6" />
-                      {orders.filter(o => o.status !== 'Cancelled').length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {orders.filter(o => o.status !== 'Cancelled').length}
-                        </span>
-                      )}
-                    </div>
-                    <div
-                      className="relative cursor-pointer hover:scale-110 transition p-1"
-                      onClick={() => setShowCart(!showCart)}
-                      title="Cart"
-                    >
-                      <ShoppingCart className="w-6 h-6" />
-                      {cart.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {cart.length}
-                        </span>
-                      )}
-                    </div>
-
                     <div
                       className="relative cursor-pointer hover:scale-110 transition p-1 hidden sm:block"
                       onClick={() => setShowThemeSelector(true)}
