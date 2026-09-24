@@ -23,7 +23,7 @@ body,
 
 html { overflow-x: clip; }
 
-.profile-page { position:fixed; inset:0; z-index:60; width:100%; max-width:760px; margin:0 auto; overflow-y:auto; padding-bottom:92px; background:#f2f5f7; color:#252525; }
+.profile-page { position:fixed; inset:0; z-index:100; width:100%; max-width:760px; margin:0 auto; overflow-y:auto; padding-bottom:92px; background:#f2f5f7; color:#252525; }
 .profile-page-heading { position:sticky; top:0; z-index:5; min-height:74px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 32px 17px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.12); }
 .profile-page-heading p { margin:0; font-size:22px; font-weight:700; }
 .profile-status-dot { width:8px; height:8px; margin-bottom:8px; border-radius:50%; background:#3ccf85; }
@@ -46,7 +46,7 @@ html { overflow-x: clip; }
   body { padding-bottom:0; }
 }
 @media (min-width:761px) { .profile-page { border-radius:8px; box-shadow:0 8px 25px rgba(0,0,0,.08); }.profile-bottom-nav { position:sticky; margin-top:20px; }.profile-page { padding-bottom:0; } }
-@media (max-width:480px) { .profile-page-heading { min-height:70px; padding:0 32px 16px; }.profile-page-heading p { font-size:22px; }.profile-identity { gap:14px; padding:12px 32px 18px; }.profile-avatar { width:92px; height:92px; flex-basis:92px; font-size:36px; }.profile-identity-copy h2 { font-size:19px; }.profile-identity-copy p { font-size:13px; }.profile-edit { margin-top:20px; font-size:15px; }.profile-row { min-height:64px; padding-inline:32px; }.profile-row strong { font-size:16px; }.profile-footer { padding-inline:32px; } }
+@media (max-width:480px) { .profile-page-heading { min-height:64px; padding:0 20px 13px; }.profile-page-heading p { font-size:18px; }.profile-identity { gap:12px; padding:12px 20px 16px; }.profile-avatar { width:76px; height:76px; flex-basis:76px; font-size:30px; }.profile-identity-copy h2 { font-size:17px; }.profile-identity-copy p { font-size:11px; }.profile-edit { position:relative; z-index:2; margin-top:12px; font-size:13px; }.profile-row { min-height:56px; padding:12px 20px; }.profile-row strong { font-size:14px; }.profile-row small { font-size:11px; }.profile-footer { padding:20px; }.profile-footer button { min-height:48px; font-size:16px; }.profile-footer small { font-size:12px; } }
 
 @media (max-width: 639px) {
   .dashboard-nav button { font-size: 0.8125rem; }

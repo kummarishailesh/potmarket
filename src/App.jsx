@@ -3240,12 +3240,19 @@ const PotMarket = () => {
     </section>;
   };
 
+  const closeTransientPanels = () => {
+    setShowOrders(false); setShowWishlist(false); setShowCart(false); setShowFilters(false); setShowCheckout(false);
+    setShowOrderDetails(false); setShowCancelOrder(false); setShowTrackingModal(false); setShowOrderConfirmation(false);
+    setShowLogin(false); setShowRegister(false); setShowThemeSelector(false); setShowCustomPicker(false);
+    setShowCreatePost(false); setShowCreatePage(false); setShowPluginSettings(false); setShowDashboard(false);
+  };
+
   const MobileBottomNav = () => <nav className="mobile-bottom-nav" aria-label="Store navigation">
-    <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { setCurrentView('home'); setShowOrders(false); setShowWishlist(false); setShowCart(false); setShowDashboard(false); }}><ShoppingBag size={22} /><span>Home</span></button>
-    <button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); setShowDashboard(false); }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
-    <button type="button" onClick={() => { setCurrentView('home'); setShowFilters(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Filter size={22} /><span>Categories</span></button>
-    <button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); setShowDashboard(false); }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
-    <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { setCurrentView('profile'); setShowOrders(false); setShowWishlist(false); setShowCart(false); setShowDashboard(false); }}><UserRound size={22} /><span>Account</span></button>
+    <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { closeTransientPanels(); setCurrentView('home'); }}><ShoppingBag size={22} /><span>Home</span></button>
+    <button type="button" onClick={() => { closeTransientPanels(); setCurrentView('orders'); setShowOrders(true); }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
+    <button type="button" onClick={() => { closeTransientPanels(); setCurrentView('home'); setShowFilters(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Filter size={22} /><span>Categories</span></button>
+    <button type="button" onClick={() => { closeTransientPanels(); setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
+    <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { closeTransientPanels(); setCurrentView('profile'); }}><UserRound size={22} /><span>Account</span></button>
   </nav>;
 
   if (showEntryLogin && !isLoggedIn && !isAdminView) return <ConsumerEntryPage onLogin={login} onRequestOtp={requestRegistrationOtp} onRegister={register} onRequestPasswordOtp={requestPasswordOtp} onResetPassword={resetPassword} />;
@@ -3264,7 +3271,7 @@ const PotMarket = () => {
             {currentView !== 'profile' && <MobileBottomNav />}
 
           {/* Header */}
-          <header
+          {currentView !== 'profile' && (<header
             style={{
               backgroundImage: darkMode
                 ? `linear-gradient(90deg, rgba(15,23,42,.9), rgba(17,24,39,.78)), url('${NAVBAR_BACKGROUND}')`
@@ -3405,7 +3412,7 @@ const PotMarket = () => {
                 ))}
               </div>
             </div>
-          </header>
+          </header>)}
 
       {/* Trust Badges */}
       <div className="bg-white dark:bg-transparent border-b dark:border-gray-700">
