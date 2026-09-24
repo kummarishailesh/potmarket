@@ -3217,7 +3217,7 @@ const PotMarket = () => {
       <div className="profile-page-heading"><p>My Account</p><span className="profile-status-dot" /></div>
       <div className="profile-identity"><div className="profile-avatar">{initials || <UserRound size={34} />}</div><div className="profile-identity-copy"><h2>{displayName}</h2><p>{user?.email || 'Email not added'}</p><p>{user?.phone || shippingAddress.phone || 'Phone not added'}</p></div><button type="button" className="profile-edit" onClick={() => setShowCheckout(true)}>Edit</button></div>
       {profileNotice && <div className="profile-notice" role="status">{profileNotice}<button type="button" onClick={() => setProfileNotice('')} aria-label="Close message"><X size={17} /></button></div>}
-      <div className="profile-group">{profileRow('Orders and Refunds', () => { setCurrentView('orders'); setShowOrders(true); })}{profileRow('Customer Care', () => showNotice('Customer care: email support@potmarket.example for help with an order.'))}{profileRow('Invite Friends & Earn', () => showNotice('Invite sharing will be available soon.'), 'Earn rewards when friends shop with you')}{profileRow('PotMarket Rewards', () => showNotice('Rewards will appear here after your first completed order.'))}</div>
+      <div className="profile-group">{profileRow('Orders and Refunds', () => { setCurrentView('orders'); setShowOrders(true); })}{profileRow('Wishlist', () => { setCurrentView('wishlist'); setShowWishlist(true); }, `${wishlist.length} saved item${wishlist.length === 1 ? '' : 's'}`)}{profileRow('Customer Care', () => showNotice('Customer care: email support@potmarket.example for help with an order.'))}{profileRow('Invite Friends & Earn', () => showNotice('Invite sharing will be available soon.'), 'Earn rewards when friends shop with you')}{profileRow('PotMarket Rewards', () => showNotice('Rewards will appear here after your first completed order.'))}</div>
       <div className="profile-group">{profileRow('Address', () => setShowCheckout(true), addressLabel)}{profileRow('Notifications', () => showNotice('Order and delivery notifications are enabled for this account.'))}</div>
       <div className="profile-group">{profileRow('How To Return', () => showNotice('Eligible products can be returned within 7 days of delivery.'))}{profileRow('How Do I Redeem My Coupon?', () => showNotice('Coupons can be applied during checkout before payment.'))}{profileRow('Terms & Conditions', () => showNotice('Terms and conditions are available for every PotMarket order.'))}{profileRow('Promotions Terms & Conditions', () => showNotice('Promotion eligibility and limits are shown with each offer.'))}{profileRow('Returns & Refunds Policy', () => showNotice('Refunds are issued after the returned item is inspected.'))}{profileRow('We Respect Your Privacy', () => showNotice('Your account data is used only to provide PotMarket services.'))}{profileRow('Fees & Payments', () => showNotice('The checkout total includes the product and delivery charges shown before payment.'))}{profileRow('Delivery and Shipping Policy', () => showNotice('Delivery timing is shown on each product and at checkout.'))}{profileRow('Who We Are', () => showNotice('PotMarket helps you find distinctive pots and planters for your space.'))}{profileRow('Join Our Team', () => showNotice('Please contact support for current PotMarket opportunities.'))}</div>
       <div className="profile-footer"><button type="button" onClick={logout}>Logout</button><small>PotMarket · Your trusted pot store</small></div>
@@ -3277,18 +3277,6 @@ const PotMarket = () => {
                     </div>
                   )}
                   <div className="flex items-center gap-3 sm:gap-5 ml-0 sm:ml-2">
-                    <div
-                      className="relative cursor-pointer hover:scale-110 transition p-1"
-                      onClick={() => setShowWishlist(!showWishlist)}
-                      title="Wishlist"
-                    >
-                      <Heart className="w-6 h-6" />
-                      {wishlist.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                          {wishlist.length}
-                        </span>
-                      )}
-                    </div>
                     <div
                       className="relative cursor-pointer hover:scale-110 transition p-1 hidden sm:block"
                       onClick={() => setShowThemeSelector(true)}

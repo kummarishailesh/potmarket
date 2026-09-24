@@ -54,7 +54,7 @@ html { overflow-x: clip; }
 }
 
 .consumer-entry { position: relative; isolation: isolate; overflow: hidden; }
-.entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('https://images.unsplash.com/photo-1497250681960-ef046c08a56e?auto=format&fit=crop&w=2200&q=90'); background-position:center; background-size:cover; background-repeat:no-repeat; }
+.entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png'); background-position:center; background-size:cover; background-repeat:no-repeat; }
 .entry-pot-wall::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,44,34,.28), rgba(2,25,41,.38)); }
 .entry-logo { position:relative; width:56px; height:56px; display:grid; place-items:center; border-radius:16px; background:#e8b34b; color:#102a2b; box-shadow:0 10px 24px rgba(0,0,0,.18); }
 .entry-pot-shape { position:absolute; left:16px; bottom:10px; width:25px; height:19px; border-radius:3px 3px 8px 8px; background:#9a542d; transform:perspective(20px) rotateX(-4deg); }
