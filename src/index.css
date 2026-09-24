@@ -55,11 +55,20 @@ html { overflow-x: clip; }
 }
 
 .consumer-entry { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; padding: 0; }
-.entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png'); background-position:left center; background-size:cover; background-repeat:no-repeat; }
-.entry-pot-wall::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,44,34,.08), rgba(2,25,41,.14)); }
-.consumer-entry > section { display:flex; align-items:center; justify-content:flex-end; width:min(100%, 1810px); min-height:100vh; max-width:none; margin:0 auto; border-radius:0; background:transparent; box-shadow:none; }
-.consumer-entry > section > div:first-child { display:none; }
-.consumer-entry > section > div:last-child { width:min(48%, 900px); min-height:0; margin:54px 24px 54px auto; padding:64px clamp(42px, 4.5vw, 86px); border-radius:28px; background:rgba(255,255,255,.99); box-shadow:0 18px 44px rgba(12,35,22,.2); }
+.entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('/login-background.png'); background-position:center center; background-size:cover; background-repeat:no-repeat; }
+.entry-pot-wall::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,44,34,.12), rgba(2,25,41,.18)); }
+.consumer-entry > section { display:flex; align-items:stretch; justify-content:center; gap:24px; width:min(100%, 1810px); min-height:100vh; max-width:none; margin:0 auto; padding:54px 5vw; box-sizing:border-box; border-radius:0; background:transparent; box-shadow:none; }
+.consumer-entry > section > div:first-child { display:flex; }
+.consumer-brand-panel { position:relative; top:clamp(24px, 6vh, 54px); flex:1 1 0; width:auto; max-width:620px; height:min(600px, calc(100vh - 120px)); margin:0; padding:clamp(38px, 5vw, 72px) clamp(36px, 5vw, 92px); flex-direction:column; justify-content:space-between; color:#fff; border:1px solid rgba(255,255,255,.2); border-radius:28px; background:rgba(11,69,58,.2); box-shadow:none; backdrop-filter:blur(2px); }
+.consumer-brand-kicker { margin:32px 0 18px; color:#b9e7c2; font-size:12px; font-weight:700; letter-spacing:.28em; }
+.consumer-brand-panel h1 { max-width:520px; margin:0; font-family:'Trebuchet MS','Avenir Next',sans-serif; font-size:clamp(2.35rem, 4vw, 4.25rem); line-height:1.04; letter-spacing:-.03em; }
+.consumer-brand-description { max-width:430px; margin:24px 0 0; color:#e0f3df; font-size:clamp(1rem, 1.4vw, 1.2rem); line-height:1.7; }
+.consumer-benefits { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; margin-top:52px; }
+.consumer-benefits span { display:flex; min-height:112px; flex-direction:column; align-items:flex-start; justify-content:center; gap:12px; padding:16px 12px; border-top:1px solid rgba(203,242,204,.48); color:#f5fff3; line-height:1.35; }
+.consumer-benefits svg { width:34px; height:34px; padding:7px; border-radius:10px; background:#e5f5d9; color:#10203f; }
+.consumer-benefits b { font-size:12px; font-weight:700; }
+.consumer-entry > section > div:last-child { position:relative; right:-clamp(0px, 2.2vw, 32px); top:clamp(24px, 6vh, 54px); flex:1 1 0; width:auto; max-width:620px; height:min(600px, calc(100vh - 120px)); margin:0; padding:38px clamp(34px, 3.5vw, 58px); box-sizing:border-box; border-radius:24px; background:rgba(255,255,255,.97); box-shadow:0 18px 44px rgba(12,35,22,.26); }
+.consumer-entry > section > div:last-child h2 { font-family:'Trebuchet MS','Avenir Next',sans-serif; letter-spacing:-.02em; }
 .entry-login-form { color:#10203f; }
 .entry-login-form label { color:#111a36; font-size:16px; font-weight:700; }
 .entry-login-form input { min-height:60px; margin-top:8px; border-color:#d5dce7; border-radius:14px; padding:0 18px; color:#10203f; box-shadow:0 1px 2px rgba(15,23,42,.03); }
@@ -69,8 +78,9 @@ html { overflow-x: clip; }
 .entry-login-form p { color:#13203b; }
 .entry-login-form p button { color:#158342; font-weight:700; }
 @media (max-width: 900px) {
+  .consumer-entry > section > div:first-child { display:none; top:auto; }
   .consumer-entry > section { display:block; }
-  .consumer-entry > section > div:last-child { width:calc(100% - 32px); min-height:auto; margin:16px auto; padding:42px clamp(24px, 7vw, 64px); border-radius:24px; }
+  .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 32px); height:auto; min-height:auto; margin:16px auto; padding:42px clamp(24px, 7vw, 64px); border-radius:24px; }
 }
 .storefront-product-surface { position:relative; isolation:isolate; min-height:70vh; background:linear-gradient(rgba(247,252,249,.58),rgba(247,252,249,.66)),url('/potmarket/topbar-wallpaper.png') center/cover fixed; }
 .storefront-product-surface > * { position:relative; z-index:1; }
@@ -80,6 +90,7 @@ html.dark .storefront-product-surface { background:linear-gradient(rgba(5,12,15,
 .entry-pot-shape::before { content:''; position:absolute; left:-3px; top:-4px; width:31px; height:6px; border-radius:5px; background:#6e3924; }
 .entry-logo svg { position:relative; z-index:1; transform:translateY(-9px); }
 .entry-logo-small { width:44px; height:44px; border-radius:12px; }
+.main-brand-logo { width:34px; height:34px; margin-right:8px; object-fit:contain; border-radius:9px; background:rgba(255,255,255,.96); }
 @keyframes entry-pot-drift { from { margin-top:-10px; } to { margin-top:18px; } }
 
 @layer utilities {
@@ -184,7 +195,7 @@ html.dark .bg-white.border-b {
 /* Smaller screens: slightly smaller padding */
 @media (max-width: 640px) {
   .consumer-entry > section { min-height:100vh; }
-  .consumer-entry > section > div:last-child { width:calc(100% - 24px); min-height:calc(100vh - 24px); margin:12px; padding:32px 24px; border-radius:22px; }
+  .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 24px); height:auto; min-height:calc(100vh - 24px); margin:12px; padding:32px 24px; border-radius:22px; }
   .categories-row { column-gap: 1rem; }
   .category-btn { padding: 0.55rem 1rem; min-width: 88px; font-size: 0.85rem; letter-spacing: 0; font-weight: 700; }
   .categories-row { scrollbar-width: none; }
