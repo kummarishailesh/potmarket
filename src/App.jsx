@@ -3237,7 +3237,7 @@ const PotMarket = () => {
       <div className="profile-group">{profileRow('Notifications', () => showNotice('Order and delivery notifications are enabled for this account.'))}</div>
       <div className="profile-group">{profileRow('How To Return', () => showNotice('Eligible products can be returned within 7 days of delivery.'))}{profileRow('How Do I Redeem My Coupon?', () => showNotice('Coupons can be applied during checkout before payment.'))}{profileRow('Terms & Conditions', () => showNotice('Terms and conditions are available for every PotMarket order.'))}{profileRow('Promotions Terms & Conditions', () => showNotice('Promotion eligibility and limits are shown with each offer.'))}{profileRow('Returns & Refunds Policy', () => showNotice('Refunds are issued after the returned item is inspected.'))}{profileRow('We Respect Your Privacy', () => showNotice('Your account data is used only to provide PotMarket services.'))}{profileRow('Fees & Payments', () => showNotice('The checkout total includes the product and delivery charges shown before payment.'))}{profileRow('Delivery and Shipping Policy', () => showNotice('Delivery timing is shown on each product and at checkout.'))}{profileRow('Who We Are', () => showNotice('PotMarket helps you find distinctive pots and planters for your space.'))}{profileRow('Join Our Team', () => showNotice('Please contact support for current PotMarket opportunities.'))}</div>
       <div className="profile-footer"><button type="button" onClick={logout}>Logout</button><small>PotMarket · Your trusted pot store</small></div>
-      <nav className="profile-bottom-nav" aria-label="Account navigation"><button type="button" onClick={() => setCurrentView('home')}><ShoppingBag size={24} /><span>Home</span></button><button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); }}><Package size={24} /><span>Orders</span></button><button type="button" onClick={() => { setCurrentView('wishlist'); setShowWishlist(true); }}><Heart size={24} /><span>Wishlist</span></button><button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={24} /><span>Cart</span></button><button type="button" className="active"><UserRound size={24} /><span>Account</span></button></nav>
+      <nav className="profile-bottom-nav" aria-label="Account navigation"><button type="button" onClick={() => setCurrentView('home')}><ShoppingBag size={24} /><span>Home</span></button><button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); }}><Package size={24} /><span>Orders</span></button><button type="button" onClick={() => { setCurrentView('wishlist'); setShowWishlist(true); }}><Heart size={24} /><span>Wishlist</span></button><button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={24} /><span>Cart</span></button><button type="button" className="active" onClick={() => setCurrentView('home')}><UserRound size={24} /><span>Account</span></button></nav>
     </section>;
   };
 
@@ -3250,10 +3250,10 @@ const PotMarket = () => {
 
   const MobileBottomNav = () => <nav className="mobile-bottom-nav" aria-label="Store navigation">
     <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { closeTransientPanels(); setCurrentView('home'); }}><ShoppingBag size={22} /><span>Home</span></button>
-    <button type="button" onClick={() => { closeTransientPanels(); setCurrentView('orders'); setShowOrders(true); }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
-    <button type="button" onClick={() => { closeTransientPanels(); setCurrentView('home'); setShowFilters(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }}><Filter size={22} /><span>Categories</span></button>
-    <button type="button" onClick={() => { closeTransientPanels(); setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
-    <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { closeTransientPanels(); setCurrentView('profile'); }}><UserRound size={22} /><span>Account</span></button>
+    <button type="button" onClick={() => { const wasOpen = showOrders; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('orders'); setShowOrders(true); } }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
+    <button type="button" onClick={() => { const wasOpen = showFilters; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setShowFilters(true); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}><Filter size={22} /><span>Categories</span></button>
+    <button type="button" onClick={() => { const wasOpen = showCart; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('cart'); setShowCart(true); } }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
+    <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { const wasOpen = currentView === 'profile'; closeTransientPanels(); setCurrentView(wasOpen ? 'home' : 'profile'); }}><UserRound size={22} /><span>Account</span></button>
   </nav>;
 
   if (showEntryLogin && !isLoggedIn && !isAdminView) return <ConsumerEntryPage onLogin={login} onRequestOtp={requestRegistrationOtp} onRegister={register} onRequestPasswordOtp={requestPasswordOtp} onResetPassword={resetPassword} />;
@@ -3269,7 +3269,7 @@ const PotMarket = () => {
         ) : (
           <>
             <div className="hidden lg:block"><Dashboard /></div>
-            {currentView !== 'profile' && <MobileBottomNav />}
+            {currentView !== 'profile' && !showCheckout && <MobileBottomNav />}
 
           {/* Header */}
           {currentView !== 'profile' && (<header
@@ -3462,7 +3462,7 @@ const PotMarket = () => {
 
       <div style={{ backgroundImage: darkMode ? `linear-gradient(rgba(5,12,15,.68),rgba(5,12,15,.74)),url('${PRODUCT_BACKGROUND}')` : `linear-gradient(rgba(247,252,249,.58),rgba(247,252,249,.66)),url('${PRODUCT_BACKGROUND}')` }} className={`storefront-product-surface w-full px-4 py-6 flex flex-col md:flex-row gap-6 min-w-0 transition-all duration-300 ${showDashboard ? 'lg:ml-64' : ''}`}>
   {/* Filters Sidebar */}
-  <aside className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 bg-white dark:bg-transparent rounded-lg shadow p-2.5 sm:p-4 h-fit sticky top-20 md:top-24`}>
+  <aside className={`product-filter-panel ${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 bg-white dark:bg-transparent rounded-lg shadow p-2.5 sm:p-4 h-fit md:sticky md:top-24`}>
           <div className="flex items-center justify-between mb-2 sm:mb-4">
             <h3 className="font-bold text-base sm:text-lg flex items-center gap-1.5 sm:gap-2">
               <Filter className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -3557,7 +3557,7 @@ const PotMarket = () => {
         </aside>
 
         {/* Product Grid */}
-        <main className="flex-1 min-w-0">
+        <main className="product-main flex-1 min-w-0">
           {currentView === 'profile' ? <ProfileView /> : <>
           <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
             <p className="text-gray-600 min-w-0">
@@ -3791,7 +3791,7 @@ const PotMarket = () => {
       {/* Footer */}
       <footer className="bg-gray-900 text-white py-12 mt-16">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="footer-columns grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
               <h3 className="text-xl font-bold mb-4">{BUSINESS_CONFIG.BUSINESS_NAME}</h3>
               <p className="text-gray-400 mb-4">Your trusted source for beautiful pots and planters. Quality craftsmanship and unique designs for your home and garden.</p>
@@ -4059,8 +4059,8 @@ const PotMarket = () => {
       {/* Checkout Modal */}
       {showCheckout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className={`${theme.cardBg} dark:bg-[#0b1220] rounded-lg w-full max-w-4xl max-h-[94vh] sm:max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
-            <div className="p-3 sm:p-6 min-w-0">
+          <div className={`checkout-modal ${theme.cardBg} dark:bg-[#0b1220] rounded-lg w-full max-w-4xl max-h-[94vh] sm:max-h-[90vh] overflow-y-auto`} onClick={(e) => e.stopPropagation()}>
+            <div className="checkout-content p-3 sm:p-6 min-w-0">
               <div className="flex items-center justify-between gap-3 mb-6">
                 <h2 className={`text-xl sm:text-2xl font-bold ${theme.textPrimary}`}>Checkout</h2>
                 <button onClick={() => setShowCheckout(false)}>
@@ -4068,41 +4068,16 @@ const PotMarket = () => {
                 </button>
               </div>
 
-              {/* Progress Steps */}
-              <div className="flex items-center justify-center mb-5 sm:mb-8 overflow-x-auto">
-                <div className="flex items-center space-x-2 sm:space-x-4 min-w-max text-xs sm:text-sm">
-                  <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full ${
-                    checkoutStep === 'address' ? 'bg-green-600 text-white' :
-                    ['payment', 'confirmation'].includes(checkoutStep) ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}>
-                    1
-                  </div>
-                  <span className={`text-sm ${checkoutStep === 'address' ? 'text-green-600 font-semibold' : theme.textSecondary}`}>
-                    Address
+              <div className="checkout-progress flex items-center justify-center mb-5 sm:mb-8">
+                <div className="flex items-center gap-2 text-sm font-semibold text-green-600">
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-green-600 text-white">
+                    {checkoutStep === 'address' ? '1' : checkoutStep === 'payment' ? '2' : '3'}
                   </span>
-                  <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
-                  <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full ${
-                    checkoutStep === 'payment' ? 'bg-green-600 text-white' :
-                    checkoutStep === 'confirmation' ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}>
-                    2
-                  </div>
-                  <span className={`text-sm ${checkoutStep === 'payment' ? 'text-green-600 font-semibold' : theme.textSecondary}`}>
-                    Payment
-                  </span>
-                  <div className="w-4 sm:w-8 h-px bg-gray-300"></div>
-                  <div className={`flex items-center justify-center w-6 h-6 sm:w-8 sm:h-8 rounded-full ${
-                    checkoutStep === 'confirmation' ? 'bg-green-600 text-white' : 'bg-gray-300 text-gray-600'
-                  }`}>
-                    3
-                  </div>
-                  <span className={`text-sm ${checkoutStep === 'confirmation' ? 'text-green-600 font-semibold' : theme.textSecondary}`}>
-                    Confirm
-                  </span>
+                  <span>{checkoutStep === 'address' ? 'Address' : checkoutStep === 'payment' ? 'Payment' : 'Confirm'}</span>
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
+              <div className="checkout-columns grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-8">
                 {/* Main Content */}
                 <div>
                   {checkoutStep === 'address' && (
@@ -4275,9 +4250,7 @@ const PotMarket = () => {
                             <div className="w-2 h-2 bg-green-600 rounded-full"></div>
                             <span className="font-semibold">Order Ready!</span>
                           </div>
-                          <p className="text-green-700 text-sm">
-                            Your order has been placed successfully. You will receive a confirmation email shortly.
-                          </p>
+                          <p className="text-green-700 text-sm">Your order details are ready below.</p>
                         </div>
 
                         <div className="border rounded-lg p-3 sm:p-4">
@@ -4469,8 +4442,17 @@ const PotMarket = () => {
                                       openOrderInvoice(confirmedOrder, { preventAlert: true });
                                     }, 250);
 
-                                    // Clear cart and reset form
+                                    // Clear cart locally and remotely only after the order succeeds.
                                     setCart([]);
+                                    await saveCart([]);
+                                    if (user?.id) {
+                                      fetch(`${API_BASE.replace('/api','')}/api/users/${user.id}/data`, {
+                                        method: 'POST',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        credentials: 'include',
+                                        body: JSON.stringify({ cart: [] })
+                                      }).catch(error => console.warn('Failed to clear saved cart:', error));
+                                    }
                                     setShowCheckout(false);
                                     setCheckoutStep('address');
                                     setShippingAddress({
@@ -4503,14 +4485,14 @@ const PotMarket = () => {
                 </div>
 
                 {/* Order Summary */}
-                <div className="lg:sticky lg:top-6">
+                <div className="checkout-summary lg:sticky lg:top-6">
                   <div className="bg-gray-50 rounded-lg p-4 sm:p-6 min-w-0">
                     <h3 className="text-lg font-semibold mb-4">Order Summary</h3>
 
-                    <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
+                    <div className="checkout-summary-items space-y-3 mb-4 max-h-60 overflow-y-auto">
                       {cart.map(item => (
                         <div key={item.id} className="flex gap-3">
-                          <div className="w-12 h-12 bg-white rounded flex items-center justify-center flex-shrink-0">
+                          <div className="checkout-summary-image w-12 h-12 bg-white rounded flex items-center justify-center flex-shrink-0">
                             {getOrderItemImage(item) ? <img
                               src={getOrderItemImage(item)}
                               alt={item.name}
@@ -4528,7 +4510,7 @@ const PotMarket = () => {
                       ))}
                     </div>
 
-                    <div className="border-t pt-4 space-y-2">
+                    <div className="checkout-summary-totals border-t pt-4 space-y-2">
                       <div className="flex justify-between">
                         <span>Subtotal:</span>
                         <span>₹{cartTotal}</span>

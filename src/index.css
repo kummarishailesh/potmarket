@@ -80,7 +80,7 @@ html { overflow-x: clip; }
 @media (max-width: 900px) {
   .consumer-entry > section > div:first-child { display:none; top:auto; }
   .consumer-entry > section { display:block; }
-  .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 32px); height:auto; min-height:auto; margin:16px auto; padding:42px clamp(24px, 7vw, 64px); border-radius:24px; }
+  .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 48px); height:auto; min-height:auto; margin:16px auto; padding:30px clamp(20px, 6vw, 42px); border-radius:20px; }
 }
 .storefront-product-surface { position:relative; isolation:isolate; min-height:70vh; background-color:#f7fcf9; background-position:center; background-size:cover; background-attachment:fixed; }
 .storefront-product-surface > * { position:relative; z-index:1; }
@@ -88,6 +88,36 @@ html.dark .storefront-product-surface { background-color:#050c0f; }
 .product-grid { gap:8px !important; }
 .product-card { border-width:0; border-radius:0; }
 .product-card-image { padding:0; }
+@media (max-width: 767px) {
+  .footer-columns { grid-template-columns:repeat(2, minmax(0, 1fr)); gap:24px 18px; }
+  .footer-columns > div:first-child,
+  .footer-columns > div:last-child { grid-column:1 / -1; }
+}
+@media (max-width: 639px) {
+  .checkout-modal { max-height:88vh; }
+  .checkout-content { padding:10px 12px !important; }
+  .checkout-content > .flex.items-center.justify-between { margin-bottom:10px; }
+  .checkout-progress { margin-bottom:12px !important; }
+  .checkout-columns { gap:12px !important; }
+  .checkout-modal h3 { margin-bottom:8px !important; font-size:1rem; }
+  .checkout-modal form.space-y-3 > :not([hidden]) ~ :not([hidden]) { margin-top:.55rem; }
+  .checkout-modal form label { font-size:.75rem; }
+  .checkout-modal form input,
+  .checkout-modal form textarea { padding:6px 10px; font-size:.875rem; }
+  .checkout-modal form textarea { min-height:58px; }
+  .checkout-modal form button,
+  .checkout-modal .checkout-columns button { padding-top:8px; padding-bottom:8px; }
+  .checkout-summary > div { padding:12px !important; }
+  .checkout-summary h3 { margin-bottom:8px !important; }
+  .checkout-summary-items { margin-bottom:8px !important; row-gap:6px !important; }
+  .checkout-summary-image { width:40px; height:40px; }
+  .checkout-summary-totals { padding-top:8px !important; row-gap:4px !important; }
+  .checkout-summary-totals .text-lg { font-size:1rem; }
+}
+@media (max-width: 767px) {
+  .product-filter-panel { position:static !important; width:100%; }
+  .product-main { width:100%; }
+}
 .entry-logo { position:relative; width:56px; height:56px; display:block; object-fit:contain; border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.18); }
 .entry-pot-shape { position:absolute; left:16px; bottom:10px; width:25px; height:19px; border-radius:3px 3px 8px 8px; background:#9a542d; transform:perspective(20px) rotateX(-4deg); }
 .entry-pot-shape::before { content:''; position:absolute; left:-3px; top:-4px; width:31px; height:6px; border-radius:5px; background:#6e3924; }
@@ -200,7 +230,12 @@ html.dark .bg-white.border-b {
 /* Smaller screens: slightly smaller padding */
 @media (max-width: 640px) {
   .consumer-entry > section { min-height:100vh; }
-  .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 24px); height:auto; min-height:calc(100vh - 24px); margin:12px; padding:32px 24px; border-radius:22px; }
+  .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 64px); height:auto; min-height:auto; margin:72px auto 12px; padding:12px 16px; border-radius:18px; }
+  .consumer-entry > section > div:last-child h2 { font-size:1.5rem; }
+  .consumer-entry > section > div:last-child > p.mb-7 { margin-bottom:1rem; }
+  .entry-login-form > * + * { margin-top:.65rem; }
+  .entry-login-form input { min-height:48px; }
+  .entry-login-form > button[type='submit'] { min-height:48px; margin-top:.65rem; font-size:16px; }
   .categories-row { column-gap: 2cm !important; }
   .category-btn { padding: 0.55rem 1rem; min-width: 104px; font-size: 0.85rem; letter-spacing: 0; font-weight: 700; }
   .categories-row { scrollbar-width: none; }
