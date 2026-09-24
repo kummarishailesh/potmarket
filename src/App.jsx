@@ -4,6 +4,14 @@ import { ShoppingCart, Search, Heart, Star, Menu, Filter, Truck, Shield, RotateC
 
 // Animated Bubble Background Component
 const BubbleBackground = ({ theme }) => {
+  const bubbles = useMemo(() => [...Array(15)].map((_, index) => ({
+    left: `${(index * 37) % 101}%`,
+    top: `${(index * 61) % 101}%`,
+    size: 40 + ((index * 29) % 80),
+    delay: (index * 1.7) % 10,
+    duration: 20 + ((index * 11) % 10)
+  })), []);
+
   return (
     <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
       {/* Background Image or Gradient */}
@@ -23,18 +31,18 @@ const BubbleBackground = ({ theme }) => {
       <div className="absolute inset-0 bg-black bg-opacity-20"></div>
 
       {/* Animated Bubbles */}
-      {[...Array(15)].map((_, i) => (
+      {bubbles.map((bubble, i) => (
         <div
           key={i}
           className={`absolute rounded-full opacity-15 animate-bubble-${i % 4 + 1}`}
           style={{
-            left: `${Math.random() * 100}%`,
-            top: `${Math.random() * 100}%`,
-            width: `${Math.random() * 80 + 40}px`,
-            height: `${Math.random() * 80 + 40}px`,
+            left: bubble.left,
+            top: bubble.top,
+            width: `${bubble.size}px`,
+            height: `${bubble.size}px`,
             background: `radial-gradient(circle, ${theme.bubbleColors[i % 6]}25, ${theme.bubbleColorsDark[i % 6]}15)`,
-            animationDelay: `${Math.random() * 10}s`,
-            animationDuration: `${Math.random() * 10 + 20}s`,
+            animationDelay: `${bubble.delay}s`,
+            animationDuration: `${bubble.duration}s`,
           }}
         />
       ))}
@@ -524,6 +532,7 @@ const ENTRY_POT_IMAGES = [
 
 const NAVBAR_BACKGROUND = `${import.meta.env.BASE_URL}navbar-background.png`;
 const LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background.png`;
+const MOBILE_LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background-mobile.png`;
 const PRODUCT_BACKGROUND = `${import.meta.env.BASE_URL}topbar-wallpaper.png`;
 const POTMARKET_LOGO = `${import.meta.env.BASE_URL}potmarket-logo.png`;
 
@@ -618,7 +627,10 @@ const RegisterForm = ({ onRequestOtp, onRegister, onSwitchToLogin }) => {
 
 
 const PotMarket = () => {
-  const [products, setProducts] = useState([
+  const [products, setProducts] = useState(() => {
+    try {
+      const cached = JSON.parse(localStorage.getItem('potmarket-products-cache') || 'null');
+      return Array.isArray(cached) && cached.length ? cached : [
     { id: 1, name: 'flower pot', price: 2499, originalPrice: 3999, rating: 2.4, reviews: 234, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/2446b85d-848f-42f9-8d6c-bebd705da30a.png', category: 'culture', discount: 38, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Medium' },
     { id: 2, name: ' lord shiva Pot', price: 599, originalPrice: 899, rating: 4.3, reviews: 156, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/638e77bc-6ed4-4d73-9868-f15ca9988b08.png', category: 'god', discount: 33, inStock: true, delivery: '2 days', prime: false, size: 'Small' },
     { id: 3, name: 'Modern india Planter', price: 1899, originalPrice: 2899, rating: 4.7, reviews: 89, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png', category: 'soil of indian', discount: 35, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Large' },
@@ -643,7 +655,11 @@ const PotMarket = () => {
     { id: 22, name: 'poeration_sindoor', price: 1549, originalPrice: 2979, rating: 4.3, reviews: 312, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/d1ce9a4b-8e3e-490f-84be-73c83b3e51da.png', category: 'milestone', discount: 30, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Small' },
     { id: 23, name: 'bananaleaf pot', price: 1659, originalPrice: 2659, rating: 4.3, reviews: 312, image: 'https://user-gen-media-assets.s3.amazonaws.com/seedream_images/8e213149-c4e6-48a0-a36c-6f0f72d17f21.png', category: 'traditional', discount: 30, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Medium'  },
     { id: 24, name: 'joint family', price: 4659, originalPrice: 6599, rating: 4.3, reviews: 312, image: 'https://i.pinimg.com/236x/3c/ce/dc/3ccedc175520e1f79c8517c23bee0ca9.jpg', category: 'family', discount: 30, inStock: true, delivery: 'Tomorrow', prime: true, size: 'Medium'  },
-  ]);
+      ];
+    } catch {
+      return [];
+    }
+  });
   const getOrderItemImage = item => item?.image || products.find(product => String(product.id) === String(item?.id))?.image || '';
   useEffect(() => {
     const refreshProducts = async () => {
@@ -651,12 +667,16 @@ const PotMarket = () => {
         const response = await fetch(`${API_BASE}/products`);
         const result = response.ok ? await response.json() : null;
         if (result?.products?.length) {
-          setProducts(current => [...current.filter(product => !result.products.some(managed => String(managed.id) === String(product.id))), ...result.products]);
+          setProducts(result.products);
+          localStorage.setItem('potmarket-products-cache', JSON.stringify(result.products));
           return;
         }
         const bootstrap = await fetch(`${API_BASE}/products/bootstrap`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ products }) });
         const seeded = bootstrap.ok ? await bootstrap.json() : null;
-        if (seeded?.products?.length) setProducts(current => [...current.filter(product => !seeded.products.some(managed => String(managed.id) === String(product.id))), ...seeded.products]);
+        if (seeded?.products?.length) {
+          setProducts(seeded.products);
+          localStorage.setItem('potmarket-products-cache', JSON.stringify(seeded.products));
+        }
       } catch {
         // Keep the bundled catalog available when the API is temporarily unavailable.
       }
@@ -670,6 +690,7 @@ const PotMarket = () => {
   const [cart, setCart] = useState([]);
   const [wishlist, setWishlist] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
+  const searchInputRef = useRef(null);
   const [recentSearches, setRecentSearches] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 10000]);
@@ -694,6 +715,7 @@ const PotMarket = () => {
   // User state (moved before theme code to avoid hoisting issues)
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [showEntryLogin, setShowEntryLogin] = useState(() => !localStorage.getItem('user-session'));
 
   // Use a configurable API base so local dev, same-origin hosting, and remote backend hosting
@@ -755,7 +777,7 @@ const PotMarket = () => {
   };
 
   // Theme state with backend persistence
-  const [currentTheme, setCurrentTheme] = useState('default');
+  const [currentTheme, setCurrentTheme] = useState(() => localStorage.getItem('potmarket-theme') || 'default');
   const [availableThemes, setAvailableThemes] = useState({ default: THEMES, custom: {} });
   const [showCustomPicker, setShowCustomPicker] = useState(false);
 
@@ -769,6 +791,7 @@ const PotMarket = () => {
       const userId = user?.id || 'guest';
       const userTheme = await fetchUserTheme(userId);
       setCurrentTheme(userTheme);
+      localStorage.setItem('potmarket-theme', userTheme);
     };
 
     loadThemesAndPreferences();
@@ -779,6 +802,7 @@ const PotMarket = () => {
     const allThemes = { ...availableThemes.default, ...availableThemes.custom };
     if (allThemes[themeKey]) {
       setCurrentTheme(themeKey);
+      localStorage.setItem('potmarket-theme', themeKey);
       const userId = user?.id || 'guest';
       await saveUserTheme(userId, themeKey);
     }
@@ -1026,9 +1050,10 @@ const PotMarket = () => {
       loadWishlist();
       loadOrders();
       loadUserData(session.id);
+      setAuthReady(true);
     } else {
       clearUserState();
-      restoreUserSession();
+      restoreUserSession().finally(() => setAuthReady(true));
     }
     // attempt to send any pending orders saved during offline/backend failures
     (async () => {
@@ -3256,6 +3281,7 @@ const PotMarket = () => {
     <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { const wasOpen = currentView === 'profile'; closeTransientPanels(); setCurrentView(wasOpen ? 'home' : 'profile'); }}><UserRound size={22} /><span>Account</span></button>
   </nav>;
 
+  if (!authReady) return <div className="auth-loading-screen" aria-label="Loading PotMarket" />;
   if (showEntryLogin && !isLoggedIn && !isAdminView) return <ConsumerEntryPage onLogin={login} onRequestOtp={requestRegistrationOtp} onRegister={register} onRequestPasswordOtp={requestPasswordOtp} onResetPassword={resetPassword} />;
 
   return (
@@ -3361,6 +3387,7 @@ const PotMarket = () => {
                 <div className="max-w-4xl mx-auto">
                   <div className="relative">
                     <input
+                      ref={searchInputRef}
                       type="text"
                       placeholder="Search for pots, planters, and more..."
                       className="w-full px-4 sm:px-6 py-2.5 sm:py-3 rounded-full text-gray-800 pr-11 shadow-md text-sm sm:text-base"
@@ -3389,7 +3416,14 @@ const PotMarket = () => {
                         ))}
                       </div>
                     )}
-                    <Search className="absolute right-4 top-3 w-5 h-5 text-gray-600" />
+                    <button
+                      type="button"
+                      aria-label="Focus search"
+                      onClick={() => searchInputRef.current?.focus()}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 rounded-full p-1 text-gray-600 hover:bg-gray-100"
+                    >
+                      <Search className="w-5 h-5" />
+                    </button>
                   </div>
                 </div>
               </div>
