@@ -82,9 +82,9 @@ html { overflow-x: clip; }
   .consumer-entry > section { display:block; }
   .consumer-entry > section > div:last-child { right:auto; top:auto; width:calc(100% - 32px); height:auto; min-height:auto; margin:16px auto; padding:42px clamp(24px, 7vw, 64px); border-radius:24px; }
 }
-.storefront-product-surface { position:relative; isolation:isolate; min-height:70vh; background:linear-gradient(rgba(247,252,249,.58),rgba(247,252,249,.66)),url('/potmarket/topbar-wallpaper.png') center/cover fixed; }
+.storefront-product-surface { position:relative; isolation:isolate; min-height:70vh; background-color:#f7fcf9; background-position:center; background-size:cover; background-attachment:fixed; }
 .storefront-product-surface > * { position:relative; z-index:1; }
-html.dark .storefront-product-surface { background:linear-gradient(rgba(5,12,15,.68),rgba(5,12,15,.74)),url('/potmarket/topbar-wallpaper.png') center/cover fixed; }
+html.dark .storefront-product-surface { background-color:#050c0f; }
 .entry-logo { position:relative; width:56px; height:56px; display:block; object-fit:contain; border-radius:16px; box-shadow:0 10px 24px rgba(0,0,0,.18); }
 .entry-pot-shape { position:absolute; left:16px; bottom:10px; width:25px; height:19px; border-radius:3px 3px 8px 8px; background:#9a542d; transform:perspective(20px) rotateX(-4deg); }
 .entry-pot-shape::before { content:''; position:absolute; left:-3px; top:-4px; width:31px; height:6px; border-radius:5px; background:#6e3924; }

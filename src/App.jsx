@@ -524,6 +524,7 @@ const ENTRY_POT_IMAGES = [
 
 const NAVBAR_BACKGROUND = `${import.meta.env.BASE_URL}navbar-background.png`;
 const LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background.png`;
+const PRODUCT_BACKGROUND = `${import.meta.env.BASE_URL}topbar-wallpaper.png`;
 const POTMARKET_LOGO = `${import.meta.env.BASE_URL}potmarket-logo.png`;
 
 const ConsumerEntryPage = ({ onLogin, onRequestOtp, onRegister, onRequestPasswordOtp, onResetPassword }) => {
@@ -3459,7 +3460,7 @@ const PotMarket = () => {
         </div>
       )}
 
-      <div className={`storefront-product-surface w-full px-4 py-6 flex flex-col md:flex-row gap-6 min-w-0 transition-all duration-300 ${showDashboard ? 'lg:ml-64' : ''}`}>
+      <div style={{ backgroundImage: darkMode ? `linear-gradient(rgba(5,12,15,.68),rgba(5,12,15,.74)),url('${PRODUCT_BACKGROUND}')` : `linear-gradient(rgba(247,252,249,.58),rgba(247,252,249,.66)),url('${PRODUCT_BACKGROUND}')` }} className={`storefront-product-surface w-full px-4 py-6 flex flex-col md:flex-row gap-6 min-w-0 transition-all duration-300 ${showDashboard ? 'lg:ml-64' : ''}`}>
   {/* Filters Sidebar */}
   <aside className={`${showFilters ? 'block' : 'hidden'} md:block w-full md:w-64 bg-white dark:bg-transparent rounded-lg shadow p-2.5 sm:p-4 h-fit sticky top-20 md:top-24`}>
           <div className="flex items-center justify-between mb-2 sm:mb-4">
