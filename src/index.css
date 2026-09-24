@@ -57,9 +57,9 @@ html { overflow-x: clip; }
 .consumer-entry { position: relative; isolation: isolate; overflow: hidden; min-height: 100vh; padding: 0; }
 .entry-pot-wall { position:absolute; inset:0; overflow:hidden; pointer-events:none; background-color:#123d36; background-image:url('https://user-gen-media-assets.s3.amazonaws.com/seedream_images/6759ea0d-c4f0-4a57-858c-f759b1d79e18.png'); background-position:left center; background-size:cover; background-repeat:no-repeat; }
 .entry-pot-wall::after { content:''; position:absolute; inset:0; background:linear-gradient(135deg, rgba(2,44,34,.28), rgba(2,25,41,.38)); }
-.consumer-entry > section { display:block; width:min(100%, 1810px); min-height:100vh; max-width:none; margin:0 auto; border-radius:0; background:transparent; box-shadow:none; }
+.consumer-entry > section { display:flex; align-items:center; justify-content:flex-end; width:min(100%, 1810px); min-height:100vh; max-width:none; margin:0 auto; border-radius:0; background:transparent; box-shadow:none; }
 .consumer-entry > section > div:first-child { display:none; }
-.consumer-entry > section > div:last-child { width:min(48%, 900px); min-height:calc(100vh - 110px); margin:54px 0 54px auto; padding:64px clamp(42px, 4.5vw, 86px); border-radius:28px 0 0 28px; background:rgba(255,255,255,.99); box-shadow:0 18px 44px rgba(12,35,22,.2); }
+.consumer-entry > section > div:last-child { width:min(48%, 900px); min-height:0; margin:54px 0 54px auto; padding:64px clamp(42px, 4.5vw, 86px); border-radius:28px 0 0 28px; background:rgba(255,255,255,.99); box-shadow:0 18px 44px rgba(12,35,22,.2); }
 .entry-login-form { color:#10203f; }
 .entry-login-form label { color:#111a36; font-size:16px; font-weight:700; }
 .entry-login-form input { min-height:60px; margin-top:8px; border-color:#d5dce7; border-radius:14px; padding:0 18px; color:#10203f; box-shadow:0 1px 2px rgba(15,23,42,.03); }
@@ -69,6 +69,7 @@ html { overflow-x: clip; }
 .entry-login-form p { color:#13203b; }
 .entry-login-form p button { color:#158342; font-weight:700; }
 @media (max-width: 900px) {
+  .consumer-entry > section { display:block; }
   .consumer-entry > section > div:last-child { width:calc(100% - 32px); min-height:auto; margin:16px auto; padding:42px clamp(24px, 7vw, 64px); border-radius:24px; }
 }
 .storefront-product-surface { position:relative; isolation:isolate; min-height:70vh; background:linear-gradient(rgba(247,252,249,.58),rgba(247,252,249,.66)),url('/potmarket/topbar-wallpaper.png') center/cover fixed; }
