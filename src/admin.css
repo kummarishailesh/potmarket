@@ -49,3 +49,70 @@ button:focus-visible,input:focus-visible,select:focus-visible,[tabindex]:focus-v
 .admin-form label { color:#d7e6e1; }
 .admin-form input { color:#f4faf7; }
 .admin-form input::placeholder { color:#86a39a; }
+
+.dashboard-main-grid { display:grid; grid-template-columns:minmax(0,1fr) 260px; gap:16px; margin-bottom:16px; }
+.dashboard-charts { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.chart-description { max-width:420px; margin:7px 0 0; color:#80908c; font-size:12px; line-height:1.45; }
+.chart-icon,.activity-mark { width:34px; height:34px; display:grid; place-items:center; border:1px solid #dce9e3; border-radius:9px; color:var(--admin-teal); background:#f0f8f4; flex:0 0 auto; }
+.chart-panel .panel-heading { align-items:flex-start; margin-bottom:18px; }
+.chart-panel .bar-chart { background:linear-gradient(180deg,transparent 0 24%,#f2f6f4 25%,transparent 25% 49%,#f2f6f4 50%,transparent 50% 74%,#f2f6f4 75%,transparent 75%); }
+.revenue-spotlight { min-height:100%; padding:23px; border-radius:8px; color:#f7fbf9; background:linear-gradient(145deg,#176d63,#0d4e4a); box-shadow:0 16px 34px rgba(16,83,78,.18); }
+.spotlight-top { display:flex; align-items:center; justify-content:space-between; color:#c2ded5; }
+.spotlight-label { font-size:10px; font-weight:700; letter-spacing:.13em; }
+.revenue-spotlight > strong { display:block; margin-top:30px; font:700 32px 'Space Grotesk',sans-serif; letter-spacing:-.04em; }
+.revenue-spotlight > p { margin:5px 0 0; color:#c4ddd6; font-size:12px; }
+.spotlight-rule { height:1px; margin:25px 0 17px; background:rgba(255,255,255,.2); }
+.spotlight-stat { display:flex; justify-content:space-between; gap:12px; padding:9px 0; color:#d1e5df; font-size:12px; }
+.spotlight-stat b { color:#fff; font-size:14px; }
+.revenue-spotlight .spotlight-note { margin-top:26px; padding-top:15px; border-top:1px solid rgba(255,255,255,.14); color:#a8cac0; font-size:11px; line-height:1.5; }
+.activity-panel .panel-heading { align-items:flex-start; }
+.activity-mark { color:#bd6b2d; background:#fff5eb; border-color:#f4dfc8; }
+@media (max-width:1180px) { .dashboard-main-grid { grid-template-columns:1fr; }.revenue-spotlight { min-height:0; display:grid; grid-template-columns:1fr auto; column-gap:20px; align-items:center; }.revenue-spotlight > strong { margin-top:12px; }.revenue-spotlight > p { grid-column:1; }.spotlight-rule { grid-column:1/-1; margin:17px 0 8px; }.spotlight-stat,.spotlight-note { grid-column:span 1; }.revenue-spotlight .spotlight-note { margin-top:0; } }
+@media (max-width:760px) { .dashboard-charts { grid-template-columns:1fr; }.revenue-spotlight { display:block; }.revenue-spotlight > strong { margin-top:25px; }.revenue-spotlight .spotlight-note { margin-top:20px; }.chart-description { max-width:290px; } }
+
+/* Keep every admin surface usable inside narrow mobile viewports. */
+@media (max-width:760px) {
+	.admin-app { min-width:0; overflow-x:hidden; }
+	.admin-topbar h1 { max-width:calc(100vw - 120px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+	.admin-content { min-width:0; }
+	.panel-heading { align-items:flex-start; flex-wrap:wrap; }
+	.panel-heading > * { min-width:0; }
+	.panel-heading h2 { overflow-wrap:anywhere; }
+	.admin-primary, .admin-secondary, .admin-danger { min-height:40px; }
+	.modal-backdrop { padding:12px; overflow-y:auto; }
+	.order-modal { width:min(100%, 620px); max-height:calc(100vh - 24px); overflow-y:auto; }
+	.table-scroll { max-width:100%; overflow-x:auto; -webkit-overflow-scrolling:touch; }
+	.table-scroll table { min-width:720px; }
+	.toolbar { min-width:0; }
+	.toolbar select, .toolbar button { max-width:100%; }
+}
+
+@media (max-width:430px) {
+	.admin-topbar { min-height:76px; padding:15px 12px; }
+	.admin-content { padding:18px 10px 32px; }
+	.panel { padding:13px; }
+	.panel-heading { gap:10px; }
+	.panel-heading > .admin-secondary { width:100%; justify-content:center; }
+	.report-summary { gap:8px; }
+	.report-number { min-width:0; padding:13px; }
+	.report-number strong { overflow-wrap:anywhere; }
+	.product-form-actions { align-items:stretch; flex-direction:column; }
+	.product-form-actions .admin-primary, .product-form-actions .admin-secondary { width:100%; }
+	.admin-login-card { width:calc(100% - 24px); padding:22px; }
+}
+
+/* Final mobile drawer override: this follows the desktop control-room layer. */
+@media (max-width:760px) {
+	.admin-sidebar {
+		position:fixed;
+		inset:0 auto 0 0;
+		z-index:40;
+		width:min(86vw, 300px);
+		flex:0 0 auto;
+		min-height:100dvh;
+		transform:translateX(-100%);
+		overflow-y:auto;
+	}
+	.admin-sidebar.open { transform:translateX(0); }
+	.admin-main { width:100%; min-width:0; flex:1 1 100%; }
+}

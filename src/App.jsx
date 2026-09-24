@@ -2873,8 +2873,9 @@ const PotMarket = () => {
   );
 
   const Dashboard = () => (
-    // Position the dashboard to start aligned with the Filters sidebar (sticky top-24)
-    <aside className={`${showDashboard ? 'translate-x-0' : '-translate-x-full'} fixed left-0 top-20 sm:top-24 bottom-0 w-[min(78vw,16rem)] sm:w-64 bg-white shadow-2xl z-40 transition-transform duration-300 ease-in-out flex flex-col` }>
+    <>
+    {showDashboard && <button type="button" aria-label="Close dashboard" className="fixed inset-0 top-20 sm:top-24 bg-black/30 z-30 cursor-default" onClick={() => setShowDashboard(false)} />}
+    <aside aria-hidden={!showDashboard} className={`${showDashboard ? 'translate-x-0' : '-translate-x-full pointer-events-none'} fixed left-0 top-20 sm:top-24 bottom-0 w-[min(78vw,16rem)] sm:w-64 bg-white shadow-2xl z-40 transition-transform duration-300 ease-in-out flex flex-col` }>
       <div className="p-3 sm:p-4 border-b">
         <div className="flex items-center justify-between mb-2 sm:mb-4">
           {/* Icon + title to mirror Filters header */}
@@ -3196,6 +3197,7 @@ const PotMarket = () => {
         )}
       </nav>
     </aside>
+    </>
   );
 
   // Check if current view is an admin view
