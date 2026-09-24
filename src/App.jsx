@@ -3018,6 +3018,7 @@ const PotMarket = () => {
           </>
         )}
 
+        {false && <>
         {/* Admin Sections */}
         <div className="pt-4 border-t">
           <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2 px-4">Admin Panel</h3>
@@ -3157,6 +3158,7 @@ const PotMarket = () => {
             <span>Settings</span>
           </button>
         </div>
+        </>}
 
         {isLoggedIn && (
           <div className="pt-4 mt-4 border-t">
@@ -3220,6 +3222,14 @@ const PotMarket = () => {
     </section>;
   };
 
+  const MobileBottomNav = () => <nav className="mobile-bottom-nav" aria-label="Store navigation">
+    <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { setCurrentView('home'); setShowOrders(false); setShowWishlist(false); setShowCart(false); }}><ShoppingBag size={22} /><span>Home</span></button>
+    <button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
+    <button type="button" onClick={() => setShowDashboard(true)}><Menu size={22} /><span>Categories</span></button>
+    <button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
+    <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { setCurrentView('profile'); setShowOrders(false); setShowWishlist(false); setShowCart(false); }}><UserRound size={22} /><span>Account</span></button>
+  </nav>;
+
   if (showEntryLogin && !isLoggedIn && !isAdminView) return <ConsumerEntryPage onLogin={login} onRequestOtp={requestRegistrationOtp} onRegister={register} onRequestPasswordOtp={requestPasswordOtp} onResetPassword={resetPassword} />;
 
   return (
@@ -3234,6 +3244,7 @@ const PotMarket = () => {
           <>
             {/* Dashboard */}
             <Dashboard />
+            {currentView !== 'profile' && <MobileBottomNav />}
 
           {/* Dashboard Overlay for Mobile */}
           {showDashboard && (
