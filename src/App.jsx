@@ -3223,11 +3223,11 @@ const PotMarket = () => {
   };
 
   const MobileBottomNav = () => <nav className="mobile-bottom-nav" aria-label="Store navigation">
-    <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { setCurrentView('home'); setShowOrders(false); setShowWishlist(false); setShowCart(false); }}><ShoppingBag size={22} /><span>Home</span></button>
-    <button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
+    <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { setCurrentView('home'); setShowOrders(false); setShowWishlist(false); setShowCart(false); setShowDashboard(false); }}><ShoppingBag size={22} /><span>Home</span></button>
+    <button type="button" onClick={() => { setCurrentView('orders'); setShowOrders(true); setShowDashboard(false); }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
     <button type="button" onClick={() => setShowDashboard(true)}><Menu size={22} /><span>Categories</span></button>
-    <button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
-    <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { setCurrentView('profile'); setShowOrders(false); setShowWishlist(false); setShowCart(false); }}><UserRound size={22} /><span>Account</span></button>
+    <button type="button" onClick={() => { setCurrentView('cart'); setShowCart(true); setShowDashboard(false); }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
+    <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { setCurrentView('profile'); setShowOrders(false); setShowWishlist(false); setShowCart(false); setShowDashboard(false); }}><UserRound size={22} /><span>Account</span></button>
   </nav>;
 
   if (showEntryLogin && !isLoggedIn && !isAdminView) return <ConsumerEntryPage onLogin={login} onRequestOtp={requestRegistrationOtp} onRegister={register} onRequestPasswordOtp={requestPasswordOtp} onResetPassword={resetPassword} />;
