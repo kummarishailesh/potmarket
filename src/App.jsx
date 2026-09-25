@@ -530,11 +530,11 @@ const ENTRY_POT_IMAGES = [
   'https://chatgpt.com/backend-api/estuary/content?id=file_00000000c714822fb54d71e82786e9b9&ts=497296&p=fs&cid=1&sig=88cd2d82831a955ed39b59db161da2d940f79aa42088824cca1c7e86d5d410f5&v=0',
 ];
 
-const NAVBAR_BACKGROUND = `${import.meta.env.BASE_URL}navbar-background.png`;
-const LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background.png`;
-const MOBILE_LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background-mobile.png`;
-const PRODUCT_BACKGROUND = `${import.meta.env.BASE_URL}topbar-wallpaper.png`;
-const POTMARKET_LOGO = `${import.meta.env.BASE_URL}potmarket-logo.png`;
+const NAVBAR_BACKGROUND = `${import.meta.env.BASE_URL}navbar-background.webp`;
+const LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background.webp`;
+const MOBILE_LOGIN_BACKGROUND = `${import.meta.env.BASE_URL}login-background-mobile.webp`;
+const PRODUCT_BACKGROUND = `${import.meta.env.BASE_URL}topbar-wallpaper.webp`;
+const POTMARKET_LOGO = `${import.meta.env.BASE_URL}potmarket-logo.webp`;
 
 const ConsumerEntryPage = ({ onLogin, onRequestOtp, onRegister, onRequestPasswordOtp, onResetPassword }) => {
   const [registering, setRegistering] = useState(false); const [forgotPassword, setForgotPassword] = useState(false);
@@ -3735,6 +3735,9 @@ const PotMarket = () => {
                   <img 
                     src={product.image} 
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    fetchPriority="low"
                     className="w-full h-full object-cover"
                     onError={(e) => {
                       e.target.style.display = 'none';
