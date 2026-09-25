@@ -270,6 +270,7 @@ const BUSINESS_CONFIG = {
 };
 
 const isGatewayPayment = paymentMethod => ['online', 'upi'].includes(String(paymentMethod || '').toLowerCase());
+const getOrderStatus = order => String(order?.orderStatus || order?.status || 'Pending');
 
 // Theme Configuration
 const THEMES = {
@@ -876,6 +877,8 @@ const PotMarket = () => {
   const [trackingOrder, setTrackingOrder] = useState(null);
   const [customCancelReason, setCustomCancelReason] = useState('');
   const [animatingButton, setAnimatingButton] = useState(null);
+  const activeOrders = orders.filter(order => getOrderStatus(order) !== 'Cancelled');
+  const cancelledOrders = orders.filter(order => getOrderStatus(order) === 'Cancelled');
 
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
@@ -1171,7 +1174,9 @@ const PotMarket = () => {
       if (data.shippingAddress) setShippingAddress(current => ({ ...current, ...data.shippingAddress, phone: data.phone || data.shippingAddress.phone || current.phone }));
       const nextCart = normalizeCartItems(Array.isArray(data.cart) ? data.cart : []);
       const nextWishlist = Array.isArray(data.wishlist) ? data.wishlist : [];
-      const nextOrders = (Array.isArray(data.orders) ? data.orders : []).filter(order => !(String(order.id || '').startsWith('ord_local_') && ['card', 'upi'].includes(String(order.paymentMethod || '').toLowerCase()) && order.paymentVerified !== true));
+      const nextOrders = (Array.isArray(data.orders) ? data.orders : [])
+        .filter(order => !(String(order.id || '').startsWith('ord_local_') && ['card', 'upi'].includes(String(order.paymentMethod || '').toLowerCase()) && order.paymentVerified !== true))
+        .map(order => ({ ...order, status: getOrderStatus(order), orderStatus: getOrderStatus(order) }));
       setCart(nextCart);
       setWishlist(nextWishlist);
       setOrders(nextOrders);
@@ -1515,7 +1520,7 @@ const PotMarket = () => {
 
   const addToCart = (product) => {
     setAnimatingButton(product.id);
-    setTimeout(() => setAnimatingButton(null), 600);
+    setTimeout(() => setAnimatingButton(null), 240);
     
     const normalizedCart = normalizeCartItems(cart);
     const normalizedProduct = normalizeCartItems([{ ...product, quantity: 1 }])[0];
@@ -2963,17 +2968,17 @@ const PotMarket = () => {
             >
               <Package className="w-5 h-5" />
               <span>My Orders</span>
-              {orders.filter(order => order.status !== 'Cancelled').length > 0 && (
+              {activeOrders.length > 0 && (
                 <span className="ml-auto bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  {orders.filter(order => order.status !== 'Cancelled').length}
+                  {activeOrders.length}
                 </span>
               )}
             </button>
 
             <button
               onClick={() => {
-                const trackableOrders = orders.filter(o => o.status !== 'Cancelled' && o.status !== 'Delivered');
-                const lastOrder = trackableOrders.length > 0 ? trackableOrders[0] : (orders.length > 0 ? orders[0] : null);
+                const trackableOrders = activeOrders.filter(o => !['Delivered', 'Completed'].includes(getOrderStatus(o)));
+                const lastOrder = trackableOrders.length > 0 ? trackableOrders[0] : (activeOrders.length > 0 ? activeOrders[0] : null);
                 if (lastOrder) {
                   setTrackingOrder(lastOrder);
                   setShowTrackingModal(true);
@@ -3275,7 +3280,7 @@ const PotMarket = () => {
 
   const MobileBottomNav = () => <nav className="mobile-bottom-nav" aria-label="Store navigation">
     <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { closeTransientPanels(); setCurrentView('home'); }}><ShoppingBag size={22} /><span>Home</span></button>
-    <button type="button" onClick={() => { const wasOpen = showOrders; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('orders'); setShowOrders(true); } }}><Package size={22} /><span>Orders</span>{orders.length > 0 && <b>{orders.length}</b>}</button>
+    <button type="button" onClick={() => { const wasOpen = showOrders; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('orders'); setShowOrders(true); } }}><Package size={22} /><span>Orders</span>{activeOrders.length > 0 && <b>{activeOrders.length}</b>}</button>
     <button type="button" onClick={() => { const wasOpen = showFilters; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setShowFilters(true); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}><Filter size={22} /><span>Categories</span></button>
     <button type="button" onClick={() => { const wasOpen = showCart; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('cart'); setShowCart(true); } }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
     <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { const wasOpen = currentView === 'profile'; closeTransientPanels(); setCurrentView(wasOpen ? 'home' : 'profile'); }}><UserRound size={22} /><span>Account</span></button>
@@ -3351,7 +3356,7 @@ const PotMarket = () => {
                       title="Orders"
                     >
                       <Package className="w-6 h-6" />
-                      {orders.filter(o => o.status !== 'Cancelled').length > 0 && <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{orders.filter(o => o.status !== 'Cancelled').length}</span>}
+                      {activeOrders.length > 0 && <span className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">{activeOrders.length}</span>}
                     </div>
                     <div
                       className="hidden lg:block relative cursor-pointer hover:scale-110 transition p-1"
@@ -3726,7 +3731,7 @@ const PotMarket = () => {
             {filteredProducts.map(product => (
               <div
                 key={product.id}
-                className={`product-card ${theme.cardBg} dark:bg-[#0b1220] shadow hover:shadow-xl transition cursor-pointer overflow-hidden border`}
+                className={`product-card ${theme.cardBg} dark:bg-[#0b1220] shadow hover:shadow-xl transition duration-150 cursor-pointer overflow-hidden border`}
               >
                 <div 
                   className="product-card-image relative bg-gray-50 aspect-square lg:aspect-[4/3] flex items-center justify-center"
@@ -3762,10 +3767,10 @@ const PotMarket = () => {
                       e.stopPropagation();
                       toggleWishlist(product);
                     }}
-                    className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:shadow-lg hover:scale-110 transition-all duration-300"
+                    className="absolute bottom-1 right-1 sm:bottom-2 sm:right-2 bg-white rounded-full p-1.5 sm:p-2 shadow-md hover:shadow-lg hover:scale-110 transition-all duration-150"
                   >
                     <Heart
-                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-300 ${
+                      className={`w-4 h-4 sm:w-5 sm:h-5 transition-colors duration-150 ${
                         wishlist.find(item => item.id === product.id)
                           ? 'fill-red-500 text-red-500'
                           : 'text-gray-400 hover:text-red-400'
@@ -3807,7 +3812,7 @@ const PotMarket = () => {
                       addToCart(product);
                     }}
                     disabled={!product.inStock}
-                    className={`w-full py-1 sm:py-2 rounded-md sm:rounded-lg font-semibold text-[9px] sm:text-base transition-all duration-300 shadow-md text-white ${
+                    className={`w-full py-1 sm:py-2 rounded-md sm:rounded-lg font-semibold text-[9px] sm:text-base transition-all duration-150 shadow-md text-white ${
                       animatingButton === product.id
                         ? 'bg-blue-500'
                         : product.inStock
@@ -3927,7 +3932,7 @@ const PotMarket = () => {
                           addToCart(item);
                         }}
                         disabled={!item.inStock}
-                    className={`w-full py-2 rounded-lg font-semibold transition-all duration-300 shadow-md text-white ${
+                    className={`w-full py-2 rounded-lg font-semibold transition-all duration-150 shadow-md text-white ${
                       animatingButton === item.id
                         ? 'bg-blue-500'
                         : item.inStock
@@ -3942,7 +3947,7 @@ const PotMarket = () => {
                 ))}
               </div>
         )}
-        {wishlist.length > 0 && orders.filter(order => order.status !== 'Cancelled').length === 0 ? (
+        {wishlist.length > 0 && activeOrders.length === 0 ? (
                 <div className="p-8 text-center text-gray-500">
                   <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                   <p className={theme.textSecondary}>No active orders</p>
@@ -3952,12 +3957,12 @@ const PotMarket = () => {
             )}
 
             {/* Canceled Orders Section */}
-            {orders.filter(order => order.status === 'Cancelled').length > 0 && (
+            {cancelledOrders.length > 0 && (
               <div className="p-4 space-y-4 border-t">
                 <h3 className={`text-lg font-bold ${theme.textPrimary}`}>
-                  Canceled Orders ({orders.filter(order => order.status === 'Cancelled').length})
+                  Canceled Orders ({cancelledOrders.length})
                 </h3>
-                {orders.filter(order => order.status === 'Cancelled').map(order => (
+                {cancelledOrders.map(order => (
                   <div key={order.id} className="border rounded-lg p-4 bg-red-50">
                     <div className="flex items-center justify-between mb-3">
                       <div>
@@ -4581,13 +4586,13 @@ const PotMarket = () => {
             onClick={(e) => e.stopPropagation()}
           >
             <div className={`sticky top-0 ${theme.cardBg} dark:bg-[#0b1220] border-b dark:border-gray-700 p-4 flex items-center justify-between`}>
-              <h2 className={`text-xl font-bold ${theme.textPrimary}`}>My Orders ({orders.filter(order => order.status !== 'Cancelled').length})</h2>
+              <h2 className={`text-xl font-bold ${theme.textPrimary}`}>My Orders ({activeOrders.length})</h2>
               <button onClick={() => setShowOrders(false)}>
                 <X className="w-6 h-6" />
               </button>
             </div>
 
-            {orders.length === 0 ? (
+            {activeOrders.length === 0 ? (
               <div className="p-8 text-center text-gray-500">
                 <Package className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                 <p className={theme.textSecondary}>No orders yet</p>
@@ -4595,7 +4600,7 @@ const PotMarket = () => {
               </div>
             ) : (
               <div className="p-4 space-y-4">
-                {orders.filter(order => order.status !== 'Cancelled').map(order => (
+                {activeOrders.map(order => (
                   <div key={order.id} className="border rounded-lg p-4 hover:shadow-md transition bg-white">
                     <div className="flex items-center justify-between mb-3">
                       <div>
@@ -5050,8 +5055,8 @@ const PotMarket = () => {
 
       {/* Product Modal */}
       {selectedProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4" onClick={() => setSelectedProduct(null)}>
-          <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-2 sm:p-4" onClick={() => setSelectedProduct(null)}>
+          <div className="product-detail-modal bg-white rounded-lg max-w-xl w-full max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="relative">
               <button
                 onClick={() => setSelectedProduct(null)}
@@ -5059,7 +5064,7 @@ const PotMarket = () => {
               >
                 <X className="w-6 h-6" />
               </button>
-              <div className="h-96 bg-gray-50 flex items-center justify-center">
+              <div className="product-detail-image h-56 sm:h-96 bg-gray-50 flex items-center justify-center">
                 <img 
                   src={selectedProduct.image} 
                   alt={selectedProduct.name}
@@ -5149,7 +5154,7 @@ const PotMarket = () => {
       {/* Register Modal */}
       {showRegister && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#0b1220] rounded-lg w-full max-w-md" onClick={(e) => e.stopPropagation()}>
+          <div className="bg-white dark:bg-[#0b1220] rounded-lg w-full max-w-md max-h-[calc(100vh-2rem)] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-2xl font-bold dark:text-gray-100">Register</h2>
