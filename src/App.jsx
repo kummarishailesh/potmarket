@@ -3280,9 +3280,9 @@ const PotMarket = () => {
 
   const MobileBottomNav = () => <nav className="mobile-bottom-nav" aria-label="Store navigation">
     <button type="button" className={currentView === 'home' ? 'active' : ''} onClick={() => { closeTransientPanels(); setCurrentView('home'); }}><ShoppingBag size={22} /><span>Home</span></button>
-    <button type="button" onClick={() => { const wasOpen = showOrders; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('orders'); setShowOrders(true); } }}><Package size={22} /><span>Orders</span>{activeOrders.length > 0 && <b>{activeOrders.length}</b>}</button>
-    <button type="button" onClick={() => { const wasOpen = showFilters; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setShowFilters(true); window.scrollTo({ top: 0, behavior: 'smooth' }); } }}><Filter size={22} /><span>Categories</span></button>
-    <button type="button" onClick={() => { const wasOpen = showCart; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('cart'); setShowCart(true); } }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
+    <button type="button" className={showCart ? 'active' : ''} onClick={() => { const wasOpen = showCart; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('cart'); setShowCart(true); } }}><ShoppingCart size={22} /><span>Cart</span>{cart.length > 0 && <b>{cart.length}</b>}</button>
+    <button type="button" className={showOrders ? 'active' : ''} onClick={() => { const wasOpen = showOrders; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('orders'); setShowOrders(true); } }}><Package size={22} /><span>Orders</span>{activeOrders.length > 0 && <b>{activeOrders.length}</b>}</button>
+    <button type="button" className={showWishlist ? 'active' : ''} onClick={() => { const wasOpen = showWishlist; closeTransientPanels(); setCurrentView('home'); if (!wasOpen) { setCurrentView('wishlist'); setShowWishlist(true); } }}><Heart size={22} /><span>Wishlist</span>{wishlist.length > 0 && <b>{wishlist.length}</b>}</button>
     <button type="button" className={currentView === 'profile' ? 'active' : ''} onClick={() => { const wasOpen = currentView === 'profile'; closeTransientPanels(); setCurrentView(wasOpen ? 'home' : 'profile'); }}><UserRound size={22} /><span>Account</span></button>
   </nav>;
 
