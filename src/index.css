@@ -47,6 +47,10 @@ html { overflow-x: clip; }
   .mobile-bottom-nav button { position:relative; min-width:0; display:grid; justify-items:center; gap:3px; padding:7px 3px; border:0; border-radius:15px; background:transparent; color:#334155; font-size:11px; cursor:pointer; }
   .mobile-bottom-nav button.active { background:#e7f0f2; color:#086b61; font-weight:700; }
   .mobile-bottom-nav button b { position:absolute; top:0; right:18%; min-width:16px; height:16px; padding:0 4px; border-radius:9px; background:#f97316; color:#fff; font-size:10px; line-height:16px; }
+  .profile-page .profile-bottom-nav { position:fixed; right:12px; bottom:calc(12px + env(safe-area-inset-bottom)); left:12px; z-index:55; display:grid; grid-template-columns:repeat(5,1fr); max-width:760px; margin:0 auto; padding:8px 6px; border:1px solid rgba(16,24,40,.14); border-radius:22px; background:rgba(255,255,255,.96); box-shadow:0 10px 30px rgba(15,23,42,.2); backdrop-filter:blur(12px); }
+  .profile-page .profile-bottom-nav button { position:relative; min-width:0; display:grid; justify-items:center; gap:3px; padding:7px 3px; border:0; border-radius:15px; background:transparent; color:#334155; font-size:11px; cursor:pointer; }
+  .profile-page .profile-bottom-nav button.active { background:#e7f0f2; color:#086b61; font-weight:700; }
+  .profile-page .profile-bottom-nav button b { position:absolute; top:0; right:18%; min-width:16px; height:16px; padding:0 4px; border-radius:9px; background:#f97316; color:#fff; font-size:10px; line-height:16px; }
   .profile-page .mobile-bottom-nav { display:none; }
   body { padding-bottom:0; }
 }
@@ -82,6 +86,7 @@ html { overflow-x: clip; }
 .entry-login-form > button[type='button'] { color:#158342; }
 .entry-login-form p { color:#13203b; }
 .entry-login-form p button { color:#158342; font-weight:700; }
+.register-form.space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top:.65rem !important; }
 @media (max-width: 900px) {
   .entry-pot-wall { background-image:url('/login-background-mobile.webp') !important; background-position:center top; }
   .consumer-entry > section > div:first-child { display:none; top:auto; }
