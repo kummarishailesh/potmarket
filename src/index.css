@@ -31,6 +31,7 @@ html { overflow-x: clip; }
 .profile-page { position:fixed; inset:0; z-index:100; width:100%; max-width:760px; margin:0 auto; overflow-y:auto; padding-bottom:92px; background:#f2f5f7; color:#252525; }
 .profile-page-heading { position:sticky; top:0; z-index:5; min-height:74px; display:flex; align-items:flex-end; justify-content:space-between; padding:0 32px 17px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.12); }
 .profile-page-heading p { margin:0; font-size:22px; font-weight:700; }
+.profile-page-close { display:grid; place-items:center; width:36px; height:36px; margin-bottom:-6px; border:0; border-radius:50%; background:#edf2f6; color:#25343a; cursor:pointer; }
 .profile-status-dot { width:8px; height:8px; margin-bottom:8px; border-radius:50%; background:#3ccf85; }
 .profile-identity { display:flex; align-items:center; gap:20px; padding:14px 32px 18px; background:#edf2f6; }
 .profile-avatar { width:104px; height:104px; flex:0 0 104px; display:grid; place-items:center; border-radius:50%; background:#111; color:#fff; font-size:42px; font-weight:500; }

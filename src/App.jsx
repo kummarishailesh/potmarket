@@ -3259,7 +3259,7 @@ const PotMarket = () => {
       showNotice('Profile updated successfully.');
     };
     return <section className="profile-page">
-      <div className="profile-page-heading"><p>My Account</p></div>
+      <div className="profile-page-heading"><p>My Account</p><button type="button" className="profile-page-close" aria-label="Back to store" onClick={() => { closeTransientPanels(); setCurrentView('home'); }}><X size={22} /></button></div>
       <div className="profile-identity"><div className="profile-avatar">{initials || <UserRound size={34} />}</div><div className="profile-identity-copy"><h2>{displayName}</h2><p>{user?.email || 'Email not added'}</p><p>{user?.phone || shippingAddress.phone || 'Phone not added'}</p></div><button type="button" className="profile-edit" onClick={() => setProfileEditing(current => !current)}>{profileEditing ? 'Close' : 'Edit'}</button></div>
       {profileEditing && <div className="profile-editor"><label>Name<input value={shippingAddress.name} onChange={event => updateAddress('name', event.target.value)} /></label><label>Phone<input value={shippingAddress.phone} onChange={event => updateAddress('phone', event.target.value)} /></label><label>Address<textarea rows="2" value={shippingAddress.address} onChange={event => updateAddress('address', event.target.value)} /></label><div className="profile-editor-grid"><label>City<input value={shippingAddress.city} onChange={event => updateAddress('city', event.target.value)} /></label><label>State<input value={shippingAddress.state} onChange={event => updateAddress('state', event.target.value)} /></label><label>Pincode<input value={shippingAddress.pincode} onChange={event => updateAddress('pincode', event.target.value)} /></label></div><button type="button" onClick={saveProfile}>Save changes</button></div>}
       {profileNotice && <div className="profile-notice" role="status">{profileNotice}<button type="button" onClick={() => setProfileNotice('')} aria-label="Close message"><X size={17} /></button></div>}
@@ -3317,7 +3317,7 @@ const PotMarket = () => {
                   <div className="hidden lg:block cursor-pointer" onClick={() => setShowDashboard(!showDashboard)} title="Menu">
                     <Menu className="w-6 h-6" />
                   </div>
-                  <h1 className="text-lg sm:text-2xl font-bold inline-flex items-center whitespace-nowrap"><img className="main-brand-logo" src={POTMARKET_LOGO} alt="" />{BUSINESS_CONFIG.BUSINESS_NAME}</h1>
+                  <h1 className="text-lg sm:text-2xl font-bold inline-flex items-center whitespace-nowrap"><img className="main-brand-logo cursor-pointer lg:cursor-default" src={POTMARKET_LOGO} alt="Open account" onClick={() => { if (window.innerWidth <= 1023) { closeTransientPanels(); setCurrentView('profile'); } }} />{BUSINESS_CONFIG.BUSINESS_NAME}</h1>
                 </div>
 
                 
