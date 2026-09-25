@@ -111,7 +111,7 @@ html.dark .storefront-product-surface { background-color:#050c0f; }
   .footer-columns > div:last-child { grid-column:1 / -1; }
 }
 @media (max-width: 639px) {
-  .product-detail-modal { width:min(100%, 24rem); }
+  .product-detail-modal { width:min(100%, 20rem); }
   .product-detail-modal > .p-6 { padding:1rem; }
   .checkout-modal { max-height:88vh; }
   .checkout-content { padding:10px 12px !important; }

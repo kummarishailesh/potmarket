@@ -5056,7 +5056,7 @@ const PotMarket = () => {
       {/* Product Modal */}
       {selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-[60] flex items-center justify-center p-2 sm:p-4" onClick={() => setSelectedProduct(null)}>
-          <div className="product-detail-modal bg-white rounded-lg max-w-xl w-full max-h-[calc(100dvh-1rem)] sm:max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+          <div className="product-detail-modal bg-white rounded-lg max-w-md w-full max-h-[calc(100dvh-3rem)] sm:max-h-[75vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
             <div className="relative">
               <button
                 onClick={() => setSelectedProduct(null)}
@@ -5064,7 +5064,7 @@ const PotMarket = () => {
               >
                 <X className="w-6 h-6" />
               </button>
-              <div className="product-detail-image h-56 sm:h-96 bg-gray-50 flex items-center justify-center">
+              <div className="product-detail-image h-40 sm:h-64 bg-gray-50 flex items-center justify-center">
                 <img 
                   src={selectedProduct.image} 
                   alt={selectedProduct.name}
